@@ -8,7 +8,7 @@ export type LineInput = { ledgerAccountId: string; debit?: number; credit?: numb
 export type EntryInput = {
   entityId: string;
   entryDate: string;
-  source: "bank_import" | "transfer_match" | "transfer_reversal";
+  source: "opening_balance" | "bank_import" | "transfer_match" | "transfer_reversal";
   memo: string;
   createdBy: string;
   bankTransactionId?: number | null;

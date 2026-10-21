@@ -12,7 +12,8 @@
 
 export type EntityKind = "business" | "personal";
 export type EntityDef = { id: string; name: string; shortName: string; kind: EntityKind };
-export type BankAccountDef = { id: string; entityId: string; name: string; last4: string };
+/** openingBalanceCents: the balance the day before the first imported transaction. */
+export type BankAccountDef = { id: string; entityId: string; name: string; last4: string; openingBalanceCents: number };
 export type UserDef = { id: string; name: string; role: string; entityIds: string[] };
 
 export const ENTITIES: EntityDef[] = [
@@ -22,13 +23,17 @@ export const ENTITIES: EntityDef[] = [
   { id: "wes", name: "Wes Hollis (personal)", shortName: "WES HOLLIS", kind: "personal" },
 ];
 
+// Bank feeds start mid-history. The aggregator reports today's balance; the
+// opening balance is that minus everything imported since.
+export const OPENING_BALANCE_DATE = "2026-06-30";
+
 export const BANK_ACCOUNTS: BankAccountDef[] = [
-  { id: "cedar-chk", entityId: "cedar", name: "Cedar Operating Checking", last4: "4821" },
-  { id: "cedar-sav", entityId: "cedar", name: "Cedar Reserve Savings", last4: "7730" },
-  { id: "hollis-chk", entityId: "hollis", name: "Hollis Operating Checking", last4: "1956" },
-  { id: "hollis-sav", entityId: "hollis", name: "Hollis Equipment Savings", last4: "3307" },
-  { id: "land-chk", entityId: "land", name: "Land Co. Checking", last4: "5582" },
-  { id: "wes-chk", entityId: "wes", name: "Wes Personal Checking", last4: "6610" },
+  { id: "cedar-chk", entityId: "cedar", name: "Cedar Operating Checking", last4: "4821", openingBalanceCents: 38_500_000 },
+  { id: "cedar-sav", entityId: "cedar", name: "Cedar Reserve Savings", last4: "7730", openingBalanceCents: 4_000_000 },
+  { id: "hollis-chk", entityId: "hollis", name: "Hollis Operating Checking", last4: "1956", openingBalanceCents: 6_000_000 },
+  { id: "hollis-sav", entityId: "hollis", name: "Hollis Equipment Savings", last4: "3307", openingBalanceCents: 2_500_000 },
+  { id: "land-chk", entityId: "land", name: "Land Co. Checking", last4: "5582", openingBalanceCents: 1_800_000 },
+  { id: "wes-chk", entityId: "wes", name: "Wes Personal Checking", last4: "6610", openingBalanceCents: 900_000 },
 ];
 
 export const USERS: UserDef[] = [
@@ -79,5 +84,7 @@ export const dueToLedgerId = (entityId: string, other: string) => ledgerId(entit
 /** Business books: money the owner took out (debit) or put in (credit). Both are equity, never income or expense. */
 export const ownerDrawsLedgerId = (entityId: string) => ledgerId(entityId, "owner_draws");
 export const ownerContributionsLedgerId = (entityId: string) => ledgerId(entityId, "owner_contributions");
+/** Equity carried in from before the bank feed started (QuickBooks calls it Opening Balance Equity). */
+export const openingEquityLedgerId = (entityId: string) => ledgerId(entityId, "opening_equity");
 /** Personal books: the other side of draws and contributions. */
 export const ownerTransfersLedgerId = (entityId: string) => ledgerId(entityId, "transfers_with_businesses");

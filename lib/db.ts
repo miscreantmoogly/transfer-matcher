@@ -15,6 +15,7 @@ import { dirname, join } from "node:path";
 import {
   BANK_ACCOUNTS,
   CATEGORIES,
+  OPENING_BALANCE_DATE,
   ENTITIES,
   USERS,
   bankFeesLedgerId,
@@ -23,10 +24,12 @@ import {
   dueFromLedgerId,
   dueToLedgerId,
   ledgerId,
+  openingEquityLedgerId,
   ownerContributionsLedgerId,
   ownerDrawsLedgerId,
   ownerTransfersLedgerId,
 } from "./org";
+import { postEntry } from "./services/ledger";
 
 export type DB = Database.Database;
 
@@ -94,6 +97,7 @@ function insertReferenceData(db: DB): void {
       // Special accounts the matcher posts to
       insertLedger.run(clearingLedgerId(e.id), e.id, "Transfers in Transit", "asset", "transfer_clearing", null);
       insertLedger.run(bankFeesLedgerId(e.id), e.id, "Bank Fees", "expense", "bank_fees", null);
+      insertLedger.run(openingEquityLedgerId(e.id), e.id, "Opening Balance Equity", "equity", "opening_equity", null);
       if (e.kind === "personal") {
         insertLedger.run(ownerTransfersLedgerId(e.id), e.id, "Transfers with your businesses", "equity", "owner_transfers", null);
         continue;
@@ -111,7 +115,28 @@ function insertReferenceData(db: DB): void {
       insertLedger.run(cashLedgerId(a.id), a.entityId, `Cash - ${a.name} (...${a.last4})`, "asset", "cash", null);
       insertBank.run(a.id, a.entityId, a.name, a.last4, cashLedgerId(a.id));
     }
+    postOpeningBalances(db);
   })();
+}
+
+/** Each bank account's starting balance, against equity carried in from before the feed began. */
+function postOpeningBalances(db: DB): void {
+  for (const a of BANK_ACCOUNTS) {
+    if (a.openingBalanceCents === 0) continue;
+    const positive = a.openingBalanceCents > 0;
+    const cents = Math.abs(a.openingBalanceCents);
+    postEntry(db, {
+      entityId: a.entityId,
+      entryDate: OPENING_BALANCE_DATE,
+      source: "opening_balance",
+      memo: `Opening balance, ${a.name}`,
+      createdBy: "system:setup",
+      lines: [
+        { ledgerAccountId: cashLedgerId(a.id), debit: positive ? cents : 0, credit: positive ? 0 : cents },
+        { ledgerAccountId: openingEquityLedgerId(a.entityId), debit: positive ? 0 : cents, credit: positive ? cents : 0 },
+      ],
+    });
+  }
 }
 
 export const nowIso = () => new Date().toISOString();
@@ -123,13 +148,17 @@ export function resetData(db: DB): void {
       "audit_log",
       "jobs",
       "rejected_matches",
+      "intercompany_sales",
       "match_legs",
-      "journal_lines",
-      "journal_entries",
-      "match_proposals",
-      "bank_transactions",
     ]) {
       db.prepare(`DELETE FROM ${table}`).run();
     }
+    // Opening balances are part of the setup, so they stay.
+    db.prepare(
+      "DELETE FROM journal_lines WHERE entry_id IN (SELECT id FROM journal_entries WHERE source <> 'opening_balance')",
+    ).run();
+    db.prepare("DELETE FROM journal_entries WHERE source <> 'opening_balance'").run();
+    db.prepare("DELETE FROM match_proposals").run();
+    db.prepare("DELETE FROM bank_transactions").run();
   }).immediate();
 }

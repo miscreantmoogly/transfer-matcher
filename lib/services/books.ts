@@ -156,16 +156,19 @@ export function recentAudit(db: DB, user: CurrentUser, limit = 15) {
   return db
     .prepare(
       `SELECT a.* FROM audit_log a
-        WHERE a.proposal_id IS NULL
-           OR NOT EXISTS (
+        WHERE (a.proposal_id IS NULL
+               -- Events that name businesses (e.g. a confirmed sale) need access to all of them.
+               AND NOT EXISTS (SELECT 1 FROM json_each(a.details, '$.entityIds') j
+                                WHERE j.value NOT IN (SELECT entity_id FROM user_entity_access WHERE user_id = ?)))
+           OR (a.proposal_id IS NOT NULL AND NOT EXISTS (
              SELECT 1 FROM match_legs l
                JOIN bank_transactions t ON t.id = l.transaction_id
                JOIN bank_accounts ba ON ba.id = t.account_id
               WHERE l.proposal_id = a.proposal_id
-                AND ba.entity_id NOT IN (SELECT entity_id FROM user_entity_access WHERE user_id = ?))
+                AND ba.entity_id NOT IN (SELECT entity_id FROM user_entity_access WHERE user_id = ?)))
         ORDER BY a.id DESC LIMIT ?`,
     )
-    .all(user.id, limit) as {
+    .all(user.id, user.id, limit) as {
     id: number;
     at: string;
     actor: string;

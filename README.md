@@ -3,7 +3,9 @@
 Finds the money a business owner moved between their **own** bank accounts and
 legal entities, proposes matches for a human to review, and books the accepted
 ones as balanced journal entries, so transfers stop showing up as income and
-expenses.
+expenses. Then it does what that makes possible: **consolidated statements** for
+the family's businesses, with everything they did with each other eliminated,
+and a check that says whether the numbers are ready to hand to a lender.
 
 ![Review queue in the paired (T-chart) view](docs/screenshot-review.png)
 
@@ -35,7 +37,7 @@ different ways, and each needs different accounting:
 | Between two businesses | Cedar lends Hollis Ranch $40,000 | Due from / due to (intercompany loan) |
 | Business to owner | Wes's monthly $3,500 draw | Owner's draw (equity), not an expense |
 | Owner to business | Wes puts $7,000 into Hollis Ranch | Owner contribution (equity), not income |
-| Real business between the entities | pasture rent to Hollis Land, a hay sale | **Not a transfer**: real income and expense, leave it alone |
+| Real business between the entities | pasture rent to Hollis Land, a hay sale | **Not a transfer**: real income and expense on each business's books; eliminated only when they're reported together |
 
 Pairing transfers sounds trivial (same amount, opposite sign) but real feeds
 make it hard:
@@ -69,7 +71,7 @@ isn't running, the app notices and offers to run matching inline.
 Other commands:
 
 ```bash
-npm test           # 44 tests: matcher unit tests + service integration tests on real SQLite
+npm test           # 54 tests: matcher unit tests + service integration tests on real SQLite
 npm run eval       # precision / recall against ground truth -> data/eval_report.md
 npm run heldout    # held-out evaluation on an independent generator -> data/heldout_report.md
 npm run bench      # 8,000-customer fleet, large customers, worst case -> data/bench_report.md
@@ -91,7 +93,8 @@ npm run seed -- --synced   # start with sync 1 already imported and matched
   accepting does to the books in plain words. It pushes the page over instead
   of covering it, so both sides of the T stay visible.
 - **Part of a larger app:** Transfers sits in a full bookkeeping sidebar (other
-  sections are placeholders) with Review, Unmatched and History, a Transfer
+  sections are placeholders) with Review, Unmatched and History, Consolidated
+  statements, a Transfer
   impact report, and an internal **Matcher diagnostics** page that grades the
   matcher case by case against the answer key.
 - **Working through a queue:** accepting moves straight to the next match;
@@ -113,6 +116,8 @@ flowchart LR
     Worker -->|proposals| DB
     UI[Review UI] <--> API
     API -->|balanced journal entries| DB
+    UI <--> Report[Consolidation<br/>computed on read]
+    Report -->|read ledger,<br/>record sale decisions| DB
 ```
 
 1. **Import** (`lib/services/import.ts`). Upserts on `(account, provider_txn_id)`
@@ -131,6 +136,9 @@ flowchart LR
 5. **Ledger** (`lib/services/ledger.ts`). Append-only double entry. Accepting
    posts reclassification entries; undo posts reversing entries. Nothing is
    ever updated or deleted.
+6. **Consolidation** (`lib/services/consolidation.ts`). Reads every business's
+   ledger, adds them up, eliminates what they owe each other and what they sold
+   each other, and reports whether the result can be trusted yet.
 
 ### The matcher
 
@@ -176,6 +184,54 @@ the amount out of whatever income or expense category the import guessed:
 Across entities, every Due-from has an equal Due-to, so they cancel on
 consolidation. The app checks this live, along with "every entry balances".
 
+## Consolidated statements
+
+![Consolidated statements, ready to share](docs/screenshot-consolidated.png)
+
+Matching transfers fixes each business's own books. The reason that matters to
+the family is what happens next: a lender to a multi-business operation looks at
+**all of it together**. Consolidating means adding the businesses up and then
+**eliminating** everything they did with each other, because a family can't owe
+itself money or earn income from itself. Ambrook customer McKinney Land & Cattle
+credits better financial statements with a $12M credit line at about 2 points
+lower; this is the multi-entity version of that report.
+
+Two kinds of activity between the businesses get eliminated, and the difference
+between them is the point of the project:
+
+| | Transfer (a loan, a sweep) | Sale (pasture rent, a hay sale) |
+|---|---|---|
+| Each business's own books | Reclassified: not income, not expense. Leaves a due-from / due-to | **Unchanged**: it really is the Land Co.'s income and the ranch's expense, and each files taxes on it |
+| Who finds it | The matcher (it deliberately ignores sales: commerce words lower the score) | A separate check: same amount, close dates, real categories, a memo naming the other business |
+| Consolidated report | Due-from and due-to cancel | Income and expense both shrink by the same amount; **profit doesn't change** |
+
+With the demo data, consolidated revenue goes from **$657,652** before review
+to **$188,767** after: $469K of it was money the family moved or paid itself.
+
+**Readiness, not just numbers.** The report says whether it can be handed over.
+Blocking checks: every proposed transfer is reviewed, every possible sale is
+confirmed or dismissed, both sides agree on what each business owes the other,
+and the balance sheet balances. A warning (not blocking) lists uncategorized
+money, where a missed transfer might hide. Each failing check links to where it
+gets fixed. It's the pre-flight idea again, applied to a report instead of a write.
+
+Design choices:
+
+- **Eliminations are computed in the report and never posted.** Each business's
+  books stay its own; that's standard practice (consolidation worksheets) and
+  means undoing a decision can't corrupt anyone's ledger.
+- **Possible sales are found on every read**, not stored by the worker. It's one
+  pass over a few hundred rows, so it can't go stale. Only a person's decision is
+  stored (`intercompany_sales`), with partial unique indexes so a payment is in
+  at most one confirmed sale. A confirmed sale can't then be matched as a transfer.
+- **Choose which businesses to include.** Leave one out and its balances stay on
+  the balance sheet, because to that group it's an outside party.
+- **Permissions carry through.** A bookkeeper who sees one business gets that
+  business's statements; deciding a sale needs access to both sides; the
+  activity log hides decisions about businesses you can't see.
+- **Opening balances** are posted at setup (bank feeds start mid-history), so
+  the balance sheet has real cash, not just the period's net flow.
+
 ### Data model
 
 ```mermaid
@@ -189,6 +245,7 @@ erDiagram
     bank_transactions ||--|| journal_entries : "imported as"
     journal_entries ||--|{ journal_lines : "debits = credits"
     users }o--o{ entities : "user_entity_access"
+    bank_transactions ||--o| intercompany_sales : "buyer or seller side"
 ```
 
 The invariant that matters most is enforced by the database, not app code:
@@ -273,12 +330,13 @@ transfer for a person to match by hand, which is the status quo.
 | Their idea (public writing) | Where it shows up here |
 |---|---|
 | PlanBrook / AmDo: AI drafts a plan, a person reviews it, deterministic code executes it | Matcher proposes, reviewer decides, journal entries are posted by deterministic code |
-| AmDo's pre-flight checks | Seven checks re-run inside the accept transaction and shown in the drawer |
+| AmDo's pre-flight checks | Eight checks re-run inside the accept transaction and shown in the drawer; the same idea as readiness checks on the consolidated report |
 | AmDo executes "only what the reviewing user could do by hand" | Every apply runs with the reviewer's own entity permissions |
 | AI principle: deterministic foundations come first | Explainable scoring, no model, before anything learned |
 | Software factory: idempotency keys on webhooks | Idempotent bank import; deduplicated job queue |
 | Review Mode: a personalized list to work through | Review queue with auto-advance and keyboard shortcuts |
 | Multi-entity: Ambrook Pay transfers "recorded in both sets of books" | Matched bank transfers booked on both entities' books |
+| Statements that match the business, for lenders (Inventory's market-value balance sheet) | Consolidated statements across entities, with eliminations and a readiness check |
 | Coding to Cut Carbon: splitting a cost across fields | Split transfers: one withdrawal across several deposits |
 
 ## Design decisions and tradeoffs
@@ -295,6 +353,9 @@ transfer for a person to match by hand, which is the status quo.
 | Append-only ledger | Update entries in place | Audit trail; undo is a reversing entry; accountants expect it. |
 | Due-to / Due-from for intercompany | Equity contribution / distribution | The safe default. Which treatment is right is a judgment call for the owner or their accountant (future: let them choose). |
 | SQLite | Postgres | Zero setup for a demo. Production: Postgres (row locks, `SKIP LOCKED` for workers). |
+| Eliminations only in the report | Post elimination entries to a "consolidation entity" | Nothing to reverse when a decision changes; each business's books stay exactly what it files. |
+| Possible sales computed on read | Stored proposals from the worker, like transfers | Cheap at this size and never stale. With much more data, move it into the matching job. |
+| A sale needs a memo naming the other business | Amount and date only | Same-amount payments to neighbors are common (the R MILLER rent case). Precision over recall; unnamed ones can be added by hand later. |
 
 ## What's built vs. designed
 
@@ -305,6 +366,7 @@ transfer for a person to match by hand, which is the status quo.
 | `x-user-id` header and a user switcher | Firebase Auth ID token verified server-side |
 | Demo "sync" button | Bank-data aggregator webhooks, pending to posted reconciliation |
 | Synthetic labelled feed | Reviewer accept/reject decisions as labels, rejection-rate dashboards |
+| Consolidated statements on screen | PDF/Excel export for the lender, comparative periods, a shareable read-only link |
 
 ## Limitations and what I'd do next
 
@@ -316,6 +378,13 @@ transfer for a person to match by hand, which is the status quo.
 - **Learn from rejections.** Today a rejection only blocks that exact pairing.
   Repeated rejections of a pattern (say, payments to "R MILLER") should lower
   the score of similar pairs.
+- **Unrealized profit on intercompany sales.** If Cedar still has the hay it
+  bought from Hollis Ranch, the consolidated balance sheet should carry it at
+  Hollis's cost, not Cedar's price. That needs inventory quantities and cost,
+  which is exactly what Ambrook Inventory tracks.
+- **Personal statements.** Farm lenders often want the owner's personal balance
+  sheet combined with the businesses'. The personal account is connected but
+  left out of consolidation here.
 - **Many-to-many splits** aren't supported (rare, and ambiguous).
 - **Holidays** are ignored in business-day math.
 - **Multi-tenant**: every table would carry an `org_id`, and the job queue's
@@ -326,7 +395,7 @@ transfer for a person to match by hand, which is the status quo.
 ```
 db/schema.sql               tables, indexes, invariants
 lib/matcher/                the pure matching algorithm (+ tests)
-lib/services/               import, jobs, matching runs, proposals, ledger, books (+ tests)
+lib/services/               import, jobs, matching runs, proposals, pre-flight, ledger, books, consolidation (+ tests)
 lib/org.ts                  the demo organization
 app/                        Next.js UI and API routes
 scripts/                    generate data, seed, worker, eval

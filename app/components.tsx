@@ -19,8 +19,9 @@ import {
   type UnmatchedTxn,
 } from "./lib";
 import type { CaseLeg, Diagnostics } from "@/lib/diagnostics";
+import type { Consolidation, ReportLine, SaleCandidate, Section } from "@/lib/services/consolidation";
 
-export type View = "review" | "unmatched" | "history" | "books" | "diagnostics";
+export type View = "review" | "unmatched" | "history" | "books" | "consolidated" | "diagnostics";
 
 // ---------------------------------------------------------------------------
 // Icons (16px, stroke-based)
@@ -131,8 +132,9 @@ export function Sidebar(props: {
         <NavItem icon={ICON.bills} label="Bills" disabled />
         <NavItem icon={ICON.invoices} label="Invoices" disabled />
         <NavItem icon={ICON.wallet} label="Wallet" disabled />
-        <NavItem icon={ICON.reports} label="Reports" active={view === "books"} onClick={() => props.onView("books")} />
+        <NavItem icon={ICON.reports} label="Reports" active={view === "books" || view === "consolidated"} onClick={() => props.onView("consolidated")} />
         <div className="nav-group">
+          <SubItem label="Consolidated" active={view === "consolidated"} onClick={() => props.onView("consolidated")} />
           <SubItem label="Transfer impact" active={view === "books"} onClick={() => props.onView("books")} />
         </div>
 
@@ -733,6 +735,12 @@ export function Activity({ audit, users }: { audit: AppState["audit"]; users: Ap
         return `${who(a.actor)} undid match #${a.proposal_id}`;
       case "manual_match":
         return `${who(a.actor)} matched #${a.proposal_id} by hand`;
+      case "sale_confirmed":
+        return `${who(a.actor)} confirmed ${money(d.amountCents)} from ${d.buyer} to ${d.seller} as a sale between the businesses`;
+      case "sale_dismissed":
+        return `${who(a.actor)} kept ${money(d.amountCents)} from ${d.buyer} to ${d.seller} as is`;
+      case "sale_undecided":
+        return `${who(a.actor)} reopened ${money(d.amountCents)} from ${d.buyer} to ${d.seller}`;
       default:
         return `${who(a.actor)}: ${a.action}`;
     }
@@ -1072,5 +1080,243 @@ export function DiagnosticsView({ data }: { data: Diagnostics | null }) {
         </div>
       )}
     </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Consolidated statements: the businesses reported as one, for a lender
+// ---------------------------------------------------------------------------
+
+/** Accounting style: whole dollars, negatives in parentheses, zero as a dash. */
+const acct = (cents: number) => {
+  const d = Math.round(cents / 100);
+  if (d === 0) return "—";
+  const s = Math.abs(d).toLocaleString("en-US");
+  return d < 0 ? `(${s})` : s;
+};
+
+function StatementTable({ data, sections, totals }: { data: Consolidation; sections: Section[]; totals: ReportLine[] }) {
+  const row = (l: ReportLine, cls = "") => (
+    <tr key={`${cls}-${l.key}`} className={cls}>
+      <td>{l.label}</td>
+      {data.columns.map((c) => (
+        <td className="num" key={c.id}>
+          {acct(l.byEntity[c.id])}
+        </td>
+      ))}
+      <td className={`num elim ${l.eliminationCents ? "has" : ""}`}>{acct(l.eliminationCents)}</td>
+      <td className="num cons">{acct(l.consolidatedCents)}</td>
+    </tr>
+  );
+  return (
+    <div className="table-wrap">
+      <table className="ledger statement">
+        <thead>
+          <tr>
+            <th />
+            {data.columns.map((c) => (
+              <th className="num" key={c.id}>
+                {c.name}
+              </th>
+            ))}
+            <th className="num">Eliminations</th>
+            <th className="num">Consolidated</th>
+          </tr>
+        </thead>
+        <tbody>
+          {sections.map((s) => [
+            <tr key={`h-${s.title}`} className="sec">
+              <td colSpan={data.columns.length + 3}>{s.title}</td>
+            </tr>,
+            ...s.lines.map((l) => row(l)),
+            row(s.total, "subtotal"),
+          ])}
+          {totals.map((t) => row(t, "total"))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+const READY_ACTION: Record<string, string> = {
+  review: "Open review",
+  unmatched: "See unmatched",
+  sales: "Decide below",
+};
+
+export function ConsolidatedView(props: {
+  data: Consolidation | null;
+  allBusinesses: { id: string; name: string }[];
+  chosen: string[] | null;
+  onChoose: (ids: string[] | null) => void;
+  busy: boolean;
+  onDecide: (s: SaleCandidate, decision: "confirmed" | "dismissed" | "undecided") => void;
+  onConfirmAll: (s: SaleCandidate[]) => void;
+  onGo: (v: View) => void;
+}) {
+  const { data } = props;
+  if (!data) return <p className="hint">Loading…</p>;
+  const included = props.chosen ?? props.allBusinesses.map((b) => b.id);
+  const toggle = (id: string) => {
+    const next = included.includes(id) ? included.filter((x) => x !== id) : [...included, id];
+    if (next.length === 0) return;
+    props.onChoose(next.length === props.allBusinesses.length ? null : next);
+  };
+  const blocking = data.readiness.filter((c) => !c.ok && c.severity === "block");
+  const pendingSales = data.sales.filter((s) => s.status === "pending");
+  const go = (action?: string) => {
+    if (action === "sales") document.getElementById("sales")?.scrollIntoView({ behavior: "smooth" });
+    else if (action === "review" || action === "unmatched") props.onGo(action);
+  };
+
+  return (
+    <div className="consolidated">
+      <div className="toolbar">
+        <span className="note">Include</span>
+        <div className="chips" role="group" aria-label="Businesses to include">
+          {props.allBusinesses.map((b) => (
+            <button key={b.id} className="chip" aria-pressed={included.includes(b.id)} onClick={() => toggle(b.id)}>
+              {b.name}
+            </button>
+          ))}
+        </div>
+        <span className="note">{data.periodEnd ? `${shortDate("2026-07-01")} – ${shortDate(data.periodEnd)}, 2026` : ""}</span>
+      </div>
+
+      <section className={`readiness ${data.ready ? "is-ready" : ""}`} aria-live="polite">
+        <h2>
+          {data.ready
+            ? "Ready to share with your lender"
+            : `Not ready to share: ${blocking.length} ${blocking.length === 1 ? "thing" : "things"} to fix`}
+        </h2>
+        <ul className="checklist">
+          {data.readiness.map((c) => (
+            <li key={c.id}>
+              <span className={`mark ${c.ok ? "ok" : c.severity === "block" ? "bad" : "warn"}`} aria-hidden="true">
+                {c.ok ? "✓" : c.severity === "block" ? "✗" : "!"}
+              </span>
+              <span className="what">
+                {c.label}
+                {!c.ok && c.detail && <span className="sub">{c.detail}</span>}
+              </span>
+              {!c.ok && c.action && (
+                <button className="btn link" onClick={() => go(c.action)}>
+                  {READY_ACTION[c.action]}
+                </button>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {data.columns.length > 1 && (
+        <>
+          <div className="section-head" id="sales">
+            <div>
+              <h2 className="section-title">Sales between your businesses</h2>
+              <p className="lede">
+                Real income for one business and a real expense for the other, so neither business&apos;s books change. They&apos;re removed
+                only when the businesses are reported together.
+              </p>
+            </div>
+            {pendingSales.length > 1 && (
+              <button className="btn" disabled={props.busy} onClick={() => props.onConfirmAll(pendingSales)}>
+                Confirm all {pendingSales.length}
+              </button>
+            )}
+          </div>
+          <div className="table-wrap">
+            <table className="ledger sales">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Paid by</th>
+                  <th>Received by</th>
+                  <th className="num">Amount</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {data.sales.length === 0 && (
+                  <tr className="empty-row">
+                    <td colSpan={5}>No payments that look like sales between these businesses.</td>
+                  </tr>
+                )}
+                {data.sales.map((s) => (
+                  <tr key={s.key} className="static">
+                    <td className="date">{shortDate(s.buyer.postedDate)}</td>
+                    <td>
+                      {s.buyer.entityName}
+                      <span className="sub">
+                        {s.buyer.memo} · {s.buyer.category}
+                      </span>
+                    </td>
+                    <td>
+                      {s.seller.entityName}
+                      <span className="sub">
+                        {s.seller.memo} · {s.seller.category}
+                      </span>
+                    </td>
+                    <td className="num">{money(s.seller.amountCents)}</td>
+                    <td className="num">
+                      <div className="actions">
+                        {s.status === "pending" ? (
+                          <>
+                            <button className="btn ghost" disabled={props.busy} onClick={() => props.onDecide(s, "dismissed")}>
+                              Not between us
+                            </button>
+                            <button className="btn" disabled={props.busy} onClick={() => props.onDecide(s, "confirmed")}>
+                              Confirm
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <span className={`pill ${s.status === "confirmed" ? "applied" : ""}`}>
+                              {s.status === "confirmed" ? "Eliminated" : "Kept as is"}
+                            </span>
+                            <button className="btn link" disabled={props.busy} onClick={() => props.onDecide(s, "undecided")}>
+                              Undo
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+
+      <h2 className="section-title">Income statement</h2>
+      <StatementTable data={data} sections={[data.income, data.expenses]} totals={[data.netIncome]} />
+
+      <h2 className="section-title">Balance sheet</h2>
+      <StatementTable data={data} sections={[data.assets, data.liabilities, data.equity]} totals={[data.liabilitiesAndEquity]} />
+
+      {data.eliminations.length > 0 && (
+        <>
+          <h2 className="section-title">What was eliminated, and why</h2>
+          <ul className="activity eliminations">
+            {data.eliminations.map((e, i) => (
+              <li key={i}>
+                <span>
+                  <b>{e.title}</b>
+                  <span className="sub">{e.detail}</span>
+                </span>
+                <span className="amt">{money(e.amountCents)}</span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      <p className="hint">
+        Eliminations exist only in this report. Nothing is posted to any business&apos;s books, and each still files taxes on its own
+        numbers.
+        {data.columns.length < props.allBusinesses.length &&
+          " Amounts owed by a business you left out stay on the balance sheet: to this group, that business is an outside party."}
+      </p>
+    </div>
   );
 }

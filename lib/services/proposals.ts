@@ -396,6 +396,14 @@ export function manualMatch(db: DB, user: CurrentUser, transactionIds: number[])
         )
         .all(...transactionIds) as { id: number; status: string }[];
       if (claimed.some((c) => c.status === "applied")) throw conflict("One of these is already part of an applied match");
+      // A confirmed sale between two businesses is real income and expense, not a transfer.
+      const sold = db
+        .prepare(
+          `SELECT count(*) AS n FROM intercompany_sales WHERE status = 'confirmed'
+              AND (buyer_txn_id IN (${transactionIds.map(() => "?").join(",")}) OR seller_txn_id IN (${transactionIds.map(() => "?").join(",")}))`,
+        )
+        .get(...transactionIds, ...transactionIds) as { n: number };
+      if (sold.n > 0) throw conflict("One of these was confirmed as a sale between your businesses. Undo that first.");
       for (const c of claimed) {
         db.prepare("UPDATE match_proposals SET status = 'superseded', version = version + 1 WHERE id = ?").run(c.id);
         db.prepare("UPDATE match_legs SET active = 0 WHERE proposal_id = ?").run(c.id);

@@ -417,3 +417,36 @@ mark { background: #f7e1b5; color: inherit; border-radius: 3px; padding: 0 2px; 
 .case-leg .acct { color: var(--muted); }
 .case-leg .memo { grid-column: 2; font-family: var(--mono); font-size: 11.5px; color: var(--subtle); }
 .ledger td .sub { display: block; }
+
+/* ---------- Consolidated statements ------------------------------------------ */
+
+.chips { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.chip { border: 1px solid var(--line-strong); background: var(--surface); color: var(--muted); border-radius: 999px; padding: 4px 11px; font-size: 13px; cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--chip); border-color: var(--chip); color: var(--ink); font-weight: 600; }
+
+.readiness { border: 1px solid var(--amber-weak); background: #fdf8ef; border-radius: var(--radius); padding: 14px 16px; margin: 6px 0 4px; }
+.readiness.is-ready { border-color: var(--sage-weak); background: #f6f9f5; }
+.readiness h2 { font-size: 15px; margin: 0 0 10px; color: var(--amber); }
+.readiness.is-ready h2 { color: var(--sage); }
+.readiness .checklist li { align-items: flex-start; }
+.readiness .what { flex: 1; }
+.readiness .sub { display: block; font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+.readiness .btn.link { font-size: 13px; }
+.mark.warn { color: var(--amber); }
+
+.section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; }
+.section-head .lede { margin: -4px 0 10px; font-size: 13px; color: var(--muted); max-width: 70ch; }
+.ledger tbody tr.static { cursor: default; }
+.ledger tbody tr.static:hover td { background: none; }
+.ledger .actions { display: flex; gap: 6px; justify-content: flex-end; align-items: center; }
+
+.statement td, .statement th { padding: 7px 12px; }
+.statement th { white-space: normal; min-width: 96px; }
+.statement tbody tr, .statement tbody tr:hover td { cursor: default; background: none; }
+.statement .sec td { font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--subtle); padding-top: 14px; border-bottom: 0; }
+.statement .subtotal td { font-weight: 600; }
+.statement .total td { font-weight: 700; border-top: 2px solid var(--line-strong); background: var(--hover); }
+.statement .elim.has { color: var(--amber); background: #fdf8ef; }
+.statement .cons { font-weight: 600; }
+.eliminations .amt { margin-left: auto; font-weight: 600; white-space: nowrap; }
+.eliminations .sub { display: block; font-size: 12.5px; color: var(--muted); margin-top: 1px; }

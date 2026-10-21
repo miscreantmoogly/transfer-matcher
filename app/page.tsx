@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Activity,
   BooksView,
+  ConsolidatedView,
   DiagnosticsView,
   Drawer,
   HistoryTable,
@@ -16,6 +17,7 @@ import {
 } from "./components";
 import { money, type AppState, type ProposalView } from "./lib";
 import type { Diagnostics } from "@/lib/diagnostics";
+import type { Consolidation, SaleCandidate } from "@/lib/services/consolidation";
 
 type Filter = "all" | "high" | "review";
 type Layout = "paired" | "list";
@@ -38,6 +40,20 @@ export default function Page() {
   userRef.current = userId;
   const keyHandler = useRef<(e: KeyboardEvent) => void>(() => {});
   const [diagnostics, setDiagnostics] = useState<Diagnostics | null>(null);
+
+  const [consolidation, setConsolidation] = useState<Consolidation | null>(null);
+  const [consEntities, setConsEntities] = useState<string[] | null>(null); // null = every business
+  // Re-fetch the report whenever something that changes it happens (any new audit row).
+  const lastEvent = state?.audit[0]?.id ?? 0;
+  const txnCount = state?.counts.bankTransactions ?? 0;
+  useEffect(() => {
+    if (view !== "consolidated") return;
+    const q = consEntities ? `?entities=${consEntities.join(",")}` : "";
+    fetch(`/api/consolidation${q}`, { headers: { "x-user-id": userRef.current }, cache: "no-store" })
+      .then((r) => r.json())
+      .then((body) => setConsolidation(body.error ? null : body))
+      .catch(() => setConsolidation(null));
+  }, [view, consEntities, lastEvent, txnCount, userId]);
 
   // Diagnostics are computed on demand, only when the internal page is open.
   useEffect(() => {
@@ -190,6 +206,31 @@ export default function Page() {
     );
   };
 
+  const saleBody = (s: SaleCandidate, decision: string) => ({
+    buyerTxnId: s.buyer.transactionId,
+    sellerTxnId: s.seller.transactionId,
+    decision,
+  });
+  const decideSale = (s: SaleCandidate, decision: "confirmed" | "dismissed" | "undecided") =>
+    call("/api/consolidation/sales", saleBody(s, decision), () =>
+      decision === "confirmed"
+        ? { text: `Eliminated ${money(s.seller.amountCents)} from the combined report.`, action: { label: "Undo", run: () => decideSale(s, "undecided") } }
+        : decision === "dismissed"
+          ? "Kept as is."
+          : "Reopened.",
+    );
+  const confirmAllSales = (sales: SaleCandidate[]) =>
+    call(
+      "/api/consolidation/sales",
+      { decision: "confirmed", items: sales.map((s) => ({ buyerTxnId: s.buyer.transactionId, sellerTxnId: s.seller.transactionId })) },
+      (r: { ok: boolean }[]) => {
+        const ok = r.filter((x) => x.ok).length;
+        return ok === r.length
+          ? `Eliminated ${ok} sales, ${money(sales.reduce((t, s) => t + s.seller.amountCents, 0))}, from the combined report.`
+          : `Confirmed ${ok} of ${r.length}. The rest changed; check them again.`;
+      },
+    );
+
   keyHandler.current = (e: KeyboardEvent) => {
     const target = e.target as HTMLElement;
     if (view !== "review" || busy || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -218,6 +259,7 @@ export default function Page() {
     unmatched: ["Transfers", "Unmatched transactions"],
     history: ["Transfers", "History"],
     books: ["Reports", "Transfer impact"],
+    consolidated: ["Reports", "Consolidated statements"],
     diagnostics: ["Internal", "Matcher diagnostics"],
   };
 
@@ -354,6 +396,21 @@ export default function Page() {
             )}
 
             {view === "books" && <BooksView books={state.books} />}
+            {view === "consolidated" && (
+              <ConsolidatedView
+                data={consolidation}
+                allBusinesses={state.entities.filter((e) => e.kind === "business")}
+                chosen={consEntities}
+                onChoose={(ids) => {
+                  setConsolidation(null);
+                  setConsEntities(ids);
+                }}
+                busy={busy}
+                onDecide={decideSale}
+                onConfirmAll={confirmAllSales}
+                onGo={setView}
+              />
+            )}
             {view === "diagnostics" && <DiagnosticsView data={diagnostics} />}
 
             {view === "history" && (

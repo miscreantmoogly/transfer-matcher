@@ -50,7 +50,7 @@ CREATE TABLE ledger_accounts (
   type        TEXT NOT NULL CHECK (type IN ('asset', 'liability', 'equity', 'income', 'expense')),
   -- What role the account plays, so code never has to match on names.
   kind        TEXT NOT NULL CHECK (kind IN ('cash', 'category', 'transfer_clearing', 'due_from', 'due_to', 'bank_fees',
-                                         'owner_draws', 'owner_contributions', 'owner_transfers')),
+                                         'owner_draws', 'owner_contributions', 'owner_transfers', 'opening_equity')),
   -- For due_from / due_to: which sibling entity owes / is owed.
   counterparty_entity_id TEXT REFERENCES entities(id)
 );
@@ -91,7 +91,7 @@ CREATE TABLE journal_entries (
   id                  INTEGER PRIMARY KEY,
   entity_id           TEXT NOT NULL REFERENCES entities(id),
   entry_date          TEXT NOT NULL,
-  source              TEXT NOT NULL CHECK (source IN ('bank_import', 'transfer_match', 'transfer_reversal')),
+  source              TEXT NOT NULL CHECK (source IN ('opening_balance', 'bank_import', 'transfer_match', 'transfer_reversal')),
   bank_transaction_id INTEGER REFERENCES bank_transactions(id),
   proposal_id         INTEGER REFERENCES match_proposals(id),
   reverses_entry_id   INTEGER REFERENCES journal_entries(id),
@@ -172,6 +172,29 @@ CREATE TABLE rejected_matches (
   rejected_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
   reason      TEXT NOT NULL
 );
+
+-- ---------------------------------------------------------------------------
+-- Sales between the customer's own businesses (pasture rent, a hay sale).
+--
+-- Unlike a transfer, these change nothing on either business's books: the rent
+-- really is income to the Land Co. and an expense to the ranch, and each files
+-- its own taxes. They only matter when the businesses are reported together,
+-- where both sides are eliminated. A person confirms each pair; the
+-- eliminations are computed in the consolidated report and never posted.
+-- ---------------------------------------------------------------------------
+
+CREATE TABLE intercompany_sales (
+  id            INTEGER PRIMARY KEY,
+  buyer_txn_id  INTEGER NOT NULL REFERENCES bank_transactions(id),  -- money out of the buyer
+  seller_txn_id INTEGER NOT NULL REFERENCES bank_transactions(id),  -- money into the seller
+  status        TEXT NOT NULL CHECK (status IN ('confirmed', 'dismissed')),
+  decided_by    TEXT NOT NULL REFERENCES users(id),
+  decided_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+  UNIQUE (buyer_txn_id, seller_txn_id)
+);
+-- A payment can be one side of at most one confirmed sale.
+CREATE UNIQUE INDEX one_sale_per_buyer_txn ON intercompany_sales (buyer_txn_id) WHERE status = 'confirmed';
+CREATE UNIQUE INDEX one_sale_per_seller_txn ON intercompany_sales (seller_txn_id) WHERE status = 'confirmed';
 
 -- ---------------------------------------------------------------------------
 -- Background jobs. A table-backed queue: enqueueing happens in the SAME

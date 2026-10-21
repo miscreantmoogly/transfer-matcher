@@ -1,14 +1,16 @@
 // Integration tests: real SQLite (in memory), real services, real schema.
 
 import { beforeEach, describe, expect, it } from "vitest";
-import { createFreshDb, type DB } from "../db";
+import { createFreshDb, resetData, type DB } from "../db";
 import { loadUser } from "../auth";
 import { syncBatch, loadFeed } from "./demo";
 import { importTransactions } from "./import";
 import { runMatching } from "./matchRun";
 import { claimNext, complete, enqueue, fail } from "./jobs";
 import { acceptProposal, bulkAccept, listProposals, manualMatch, rejectProposal, undoProposal } from "./proposals";
-import { booksSummary, unmatchedTransactions } from "./books";
+import { booksSummary, recentAudit, unmatchedTransactions } from "./books";
+import { consolidate, decideSale } from "./consolidation";
+import { postEntry } from "./ledger";
 import { preflight } from "./preflight";
 
 let db: DB;
@@ -226,5 +228,136 @@ describe("job queue", () => {
     const job = claimNext(db)!;
     complete(db, job, { ok: true });
     expect((db.prepare("SELECT status FROM jobs WHERE id = ?").get(job.id) as { status: string }).status).toBe("done");
+  });
+});
+
+describe("consolidated statements", () => {
+  const acceptAll = () => {
+    for (const p of listProposals(db, wes(), ["proposed"])) acceptProposal(db, wes(), p.id, p.version);
+  };
+  const confirmAllSales = () => {
+    for (const s of consolidate(db, wes()).sales) decideSale(db, wes(), s.buyer.transactionId, s.seller.transactionId, "confirmed");
+  };
+  const balances = (c: ReturnType<typeof consolidate>) => {
+    for (const col of c.columns) expect(c.assets.total.byEntity[col.id]).toBe(c.liabilitiesAndEquity.byEntity[col.id]);
+    expect(c.assets.total.consolidatedCents).toBe(c.liabilitiesAndEquity.consolidatedCents);
+  };
+
+  it("balances for every business and for the group, at every stage of review", () => {
+    syncAndMatch();
+    balances(consolidate(db, wes()));
+    acceptAll();
+    balances(consolidate(db, wes()));
+    confirmAllSales();
+    balances(consolidate(db, wes()));
+  });
+
+  it("eliminates what the businesses owe each other, leaving cash untouched", () => {
+    syncAndMatch();
+    const cashBefore = consolidate(db, wes()).assets.lines.find((l) => l.key === "cash")!.consolidatedCents;
+    acceptAll();
+    const c = consolidate(db, wes());
+    const owed = [...c.assets.lines, ...c.liabilities.lines].filter((l) => l.key.startsWith("due_"));
+    expect(owed.length).toBeGreaterThan(0);
+    for (const l of owed) {
+      expect(l.eliminationCents).not.toBe(0);
+      expect(l.consolidatedCents).toBe(0);
+    }
+    expect(c.assets.lines.find((l) => l.key === "cash")!.consolidatedCents).toBe(cashBefore);
+    expect(c.readiness.find((r) => r.id === "intercompany")!.ok).toBe(true);
+  });
+
+  it("keeps balances with a business that's left out: to the group it's an outside party", () => {
+    syncAndMatch();
+    acceptAll();
+    const c = consolidate(db, wes(), ["cedar", "land"]);
+    const dueFromHollis = c.assets.lines.find((l) => l.key === "due_from:hollis")!;
+    expect(dueFromHollis.consolidatedCents).toBeGreaterThan(0);
+    expect(dueFromHollis.eliminationCents).toBe(0);
+    balances(c);
+  });
+
+  it("finds the rent and hay paid between the businesses, and not look-alikes from outsiders", () => {
+    syncAndMatch();
+    const sales = consolidate(db, wes()).sales;
+    expect(sales).toHaveLength(7); // 3 months of rent to the Land Co. from each ranch, plus one hay sale (X7-X9)
+    expect(sales.every((s) => s.status === "pending")).toBe(true);
+    expect(sales.some((s) => /R MILLER/.test(s.buyer.memo))).toBe(false); // X6: rent paid to a neighbor
+  });
+
+  it("removes intercompany sales from revenue and expenses without changing profit", () => {
+    syncAndMatch();
+    acceptAll();
+    const before = consolidate(db, wes());
+    confirmAllSales();
+    const after = consolidate(db, wes());
+    const removed = after.sales.reduce((s, x) => s + x.seller.amountCents, 0);
+    expect(removed).toBe(1_840_000);
+    expect(after.income.total.consolidatedCents).toBe(before.income.total.consolidatedCents - removed);
+    expect(after.expenses.total.consolidatedCents).toBe(before.expenses.total.consolidatedCents - removed);
+    expect(after.netIncome.consolidatedCents).toBe(before.netIncome.consolidatedCents);
+    // Each business's own books are untouched.
+    for (const col of after.columns) expect(after.income.total.byEntity[col.id]).toBe(before.income.total.byEntity[col.id]);
+  });
+
+  it("isn't ready until transfers are reviewed and sales decided", () => {
+    syncAndMatch();
+    const blocked = (c: ReturnType<typeof consolidate>) => c.readiness.filter((r) => !r.ok && r.severity === "block").map((r) => r.id);
+    expect(blocked(consolidate(db, wes()))).toEqual(["transfers", "sales"]);
+    acceptAll();
+    expect(blocked(consolidate(db, wes()))).toEqual(["sales"]);
+    confirmAllSales();
+    const c = consolidate(db, wes());
+    expect(c.ready).toBe(true);
+    expect(c.readiness.find((r) => r.id === "unexplained")!.severity).toBe("warn"); // still worth a look, but not blocking
+  });
+
+  it("flags businesses that disagree about what's owed", () => {
+    syncAndMatch();
+    // A one-sided entry, like a manual journal entry booked on only one business.
+    postEntry(db, {
+      entityId: "cedar",
+      entryDate: "2026-09-30",
+      source: "transfer_match",
+      memo: "One-sided loan",
+      createdBy: "test",
+      lines: [
+        { ledgerAccountId: "cedar:due_from_hollis", debit: 100_000 },
+        { ledgerAccountId: "cedar:opening_equity", credit: 100_000 },
+      ],
+    });
+    const check = consolidate(db, wes()).readiness.find((r) => r.id === "intercompany")!;
+    expect(check.ok).toBe(false);
+    expect(check.detail).toContain("Hollis Ranch LLC");
+  });
+
+  it("won't let a confirmed sale be matched as a transfer", () => {
+    syncAndMatch();
+    const sale = consolidate(db, wes()).sales[0];
+    decideSale(db, wes(), sale.buyer.transactionId, sale.seller.transactionId, "confirmed");
+    expect(() => manualMatch(db, wes(), [sale.buyer.transactionId, sale.seller.transactionId])).toThrow(/confirmed as a sale/);
+  });
+
+  it("keeps opening balances through a demo reset", () => {
+    syncAndMatch();
+    const opening = consolidate(db, wes()).equity.lines.find((l) => l.key === "opening_equity")!.consolidatedCents;
+    resetData(db);
+    const c = consolidate(db, wes());
+    expect(c.assets.lines.find((l) => l.key === "cash")!.consolidatedCents).toBe(opening);
+    balances(c);
+  });
+
+  it("only shows and acts on businesses the user can see, and keeps the decision out of their activity log", () => {
+    syncAndMatch();
+    const sale = consolidate(db, wes()).sales.find((s) => s.buyer.entityId === "cedar" && s.seller.entityId === "land")!;
+    expect(() => decideSale(db, dana(), sale.buyer.transactionId, sale.seller.transactionId, "confirmed")).toThrow(/not found/);
+    expect(() => consolidate(db, dana(), ["cedar"])).toThrow(/not found/);
+    const hers = consolidate(db, dana());
+    expect(hers.columns.map((c) => c.id)).toEqual(["hollis"]);
+    expect(hers.sales).toHaveLength(0);
+
+    decideSale(db, wes(), sale.buyer.transactionId, sale.seller.transactionId, "confirmed");
+    expect(recentAudit(db, wes(), 50).some((a) => a.action === "sale_confirmed")).toBe(true);
+    expect(recentAudit(db, dana(), 50).some((a) => a.action === "sale_confirmed")).toBe(false);
   });
 });

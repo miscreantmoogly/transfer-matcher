@@ -42,6 +42,15 @@ export function preflight(db: DB, user: CurrentUser, view: ProposalView): Check[
     .get(view.id, ...ids) as { n: number };
   add("unclaimed", "None of these lines is already in another accepted match", taken.n === 0);
 
+  //    ...or confirmed as a sale between two businesses (real income and expense, not a transfer).
+  const sold = db
+    .prepare(
+      `SELECT count(*) AS n FROM intercompany_sales WHERE status = 'confirmed'
+          AND (buyer_txn_id IN (${ids.map(() => "?").join(",")}) OR seller_txn_id IN (${ids.map(() => "?").join(",")}))`,
+    )
+    .get(...ids, ...ids) as { n: number };
+  add("not_a_sale", "None of these lines was confirmed as a sale between your businesses", sold.n === 0);
+
   // 4. Amounts: money out equals money in, or is short by at most a plausible fee (never on a split).
   const out = -view.legs.filter((l) => l.direction === "out").reduce((s, l) => s + l.amountCents, 0);
   const inn = view.legs.filter((l) => l.direction === "in").reduce((s, l) => s + l.amountCents, 0);
