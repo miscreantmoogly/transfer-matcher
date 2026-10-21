@@ -72,9 +72,9 @@ export function MatchCard(props: {
         {!decided && p.tier === "review" && <span className="pill review">Worth a look</span>}
         {p.source === "manual" && <span className="pill neutral">Matched by hand</span>}
         {decided && <span className={`pill ${p.status}`}>{statusLabel(p.status)}</span>}
-        <span className="score" title="How sure the matcher is, from 0 to 100">
-          {p.source === "matcher" ? `${Math.round(p.confidence * 100)}% sure` : ""}
-          {p.source === "matcher" && p.tier === "review" && p.confidence >= 0.75 && ", but fees and splits always get a person's look"}
+        <span className="score" title="Match score from 0 to 1. A ranking signal, not a probability.">
+          {p.source === "matcher" ? `Score ${p.confidence.toFixed(2)}` : ""}
+          {p.source === "matcher" && p.tier === "review" && p.confidence >= 0.75 && ". Fees and splits always get a person's look"}
         </span>
       </div>
 
