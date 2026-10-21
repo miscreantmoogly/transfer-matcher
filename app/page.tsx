@@ -16,6 +16,7 @@ import {
   type View,
 } from "./components";
 import { money, type AppState, type ProposalView } from "./lib";
+import { AmButton } from "@/design-system";
 import type { Diagnostics } from "@/lib/diagnostics";
 import type { Consolidation, SaleCandidate } from "@/lib/services/consolidation";
 
@@ -304,16 +305,16 @@ export default function Page() {
           {workerDown && (
             <span className="status warn" role="status">
               Matcher isn&apos;t running.
-              <button className="btn link" disabled={busy} onClick={() => call("/api/match/run", {}, (r) => `Found ${r.created} new matches.`)}>
+              <AmButton variant="link" disabled={busy} onClick={() => call("/api/match/run", {}, (r) => `Found ${r.created} new matches.`)}>
                 Run now
-              </button>
+              </AmButton>
             </span>
           )}
           <span className="spacer" />
           {hasData && view !== "diagnostics" && (
-            <button className="btn primary" disabled={busy || nextBatch === null} onClick={sync}>
+            <AmButton variant="primary" disabled={busy || nextBatch === null} onClick={sync}>
               {nextBatch === null ? "Bank is up to date" : "Sync bank"}
-            </button>
+            </AmButton>
           )}
         </div>
 
@@ -321,9 +322,9 @@ export default function Page() {
           <div className="empty">
             <h2>No bank activity yet</h2>
             <p>Sync your banks to bring in recent transactions. Transfers between your own accounts and businesses will show up here for review.</p>
-            <button className="btn primary" disabled={busy} onClick={sync}>
+            <AmButton variant="primary" disabled={busy} onClick={sync}>
               Sync bank
-            </button>
+            </AmButton>
           </div>
         ) : (
           <>
@@ -434,11 +435,11 @@ export default function Page() {
       {view === "review" && selected.length > 0 && (
         <div className="bulkbar" role="region" aria-label="Bulk actions">
           <span className="count">{selected.length} selected</span>
-          <button className="btn" disabled={busy} onClick={() => setSelected([])}>
+          <AmButton onDark disabled={busy} onClick={() => setSelected([])}>
             Clear
-          </button>
-          <button
-            className="btn"
+          </AmButton>
+          <AmButton
+            onDark
             disabled={busy}
             onClick={() =>
               call("/api/proposals/bulk-reject", { items: items(selected), reason: "Not a transfer" }, bulkMessage("Rejected")).then(() =>
@@ -447,14 +448,14 @@ export default function Page() {
             }
           >
             Not transfers
-          </button>
-          <button
-            className="btn primary"
+          </AmButton>
+          <AmButton
+            variant="primary"
             disabled={busy}
             onClick={() => call("/api/proposals/bulk-accept", { items: items(selected) }, bulkMessage("Accepted")).then(() => setSelected([]))}
           >
             Accept {selected.length}
-          </button>
+          </AmButton>
         </div>
       )}
 
@@ -463,11 +464,11 @@ export default function Page() {
           <span className="count">
             {money(txOut)} out, {money(txIn)} in
           </span>
-          <button className="btn" disabled={busy} onClick={() => setSelectedTxns([])}>
+          <AmButton onDark disabled={busy} onClick={() => setSelectedTxns([])}>
             Clear
-          </button>
-          <button
-            className="btn primary"
+          </AmButton>
+          <AmButton
+            variant="primary"
             disabled={busy || txOut === 0 || txIn === 0}
             onClick={() =>
               call("/api/matches/manual", { transactionIds: selectedTxns }, () => "Matched. Your books are updated.").then(() =>
@@ -476,7 +477,7 @@ export default function Page() {
             }
           >
             Match as transfer
-          </button>
+          </AmButton>
         </div>
       )}
 

@@ -1,0 +1,34 @@
+/* AmButton presentation. Colors come from the theme tokens in design-system/colors.ts. */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: 6px;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.button:hover:not(:disabled) { border-color: var(--subtle); }
+.button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.medium { padding: 7px 12px; font-size: 13.5px; }
+.small { padding: 4px 9px; font-size: 13px; }
+
+.secondary { }
+.primary { background: var(--wheat); border-color: var(--wheat); color: var(--sidebar); font-weight: 600; }
+.primary:hover:not(:disabled) { background: var(--wheat-hover); border-color: var(--wheat-hover); }
+.ghost { border-color: transparent; background: none; color: var(--muted); }
+.ghost:hover:not(:disabled) { color: var(--ink); background: var(--hover); border-color: transparent; }
+.link { border: 0; background: none; padding: 0; color: var(--amber); text-decoration: underline; }
+
+/* On the dark bulk-action bar */
+.onDark.secondary { border-color: rgba(255, 255, 255, 0.18); background: transparent; color: var(--sidebar-ink); }
+.onDark.secondary:hover:not(:disabled) { border-color: rgba(255, 255, 255, 0.4); }
+
+.icon { display: inline-flex; }

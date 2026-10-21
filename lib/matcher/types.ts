@@ -2,6 +2,8 @@
 // out. It never touches the database, the clock, or the network, which makes
 // it deterministic, trivially unit-testable, and safe to re-run any time.
 
+import type { MatchKind, MatchTier } from "../domain";
+
 export type MatchTxn = {
   id: string;
   accountId: string;
@@ -43,10 +45,10 @@ export const DEFAULT_CONFIG: MatcherConfig = {
   assignment: "exact",
 };
 
-export type Tier = "high" | "review";
+export type Tier = MatchTier;
 
 /** same_entity: one business's own accounts. intercompany: two businesses. owner: a business and the owner's personal account. */
-export type MatchKind = "same_entity" | "intercompany" | "owner";
+export type { MatchKind };
 
 export type ProposedMatch = {
   outIds: string[];

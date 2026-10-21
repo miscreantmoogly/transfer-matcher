@@ -1,0 +1,5 @@
+.pill { display: inline-block; font-size: 12px; font-weight: 500; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.neutral { background: var(--chip); color: var(--muted); }
+.positive { background: var(--sage-weak); color: var(--sage); }
+.caution { background: var(--amber-weak); color: var(--amber); }
+.negative { background: var(--brick-weak); color: var(--brick); }

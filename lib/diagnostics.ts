@@ -2,13 +2,14 @@
 // Powers the internal "Matcher diagnostics" page. Read-only: it runs the pure
 // matcher in memory and never touches the database or the books.
 
+import type { MatchKind } from "./domain";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { findTransfers, legsKeyOf, type ProposedMatch } from "./matcher";
 import { BANK_ACCOUNTS, ENTITIES } from "./org";
 
 type FeedRow = { providerTxnId: string; accountId: string; postedDate: string; amountCents: number; memo: string; batch: number };
-type TruthGroup = { id: string; kind: string; difficulty: "easy" | "medium" | "hard"; label: string; outs: string[]; ins: string[] };
+type TruthGroup = { id: string; kind: MatchKind; difficulty: "easy" | "medium" | "hard"; label: string; outs: string[]; ins: string[] };
 type Trap = { id: string; label: string; txns: string[] };
 
 export type CaseLeg = {
@@ -23,7 +24,7 @@ export type CaseLeg = {
 export type TransferCase = {
   id: string;
   label: string;
-  kind: string;
+  kind: MatchKind;
   difficulty: "easy" | "medium" | "hard";
   legs: CaseLeg[];
   /** strong / check = found exactly; missed = not proposed; wrong = proposed, but grouped with the wrong transactions */

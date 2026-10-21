@@ -19,6 +19,7 @@ import {
   type UnmatchedTxn,
 } from "./lib";
 import type { CaseLeg, Diagnostics } from "@/lib/diagnostics";
+import { AmButton, AmCheckList, AmKindPill, AmMoney, AmPill, AmStatusPill, AmTierPill, type AmPillTone } from "@/design-system";
 import type { Consolidation, ReportLine, SaleCandidate, Section } from "@/lib/services/consolidation";
 
 export type View = "review" | "unmatched" | "history" | "books" | "consolidated" | "diagnostics";
@@ -41,6 +42,7 @@ const ICON = {
   wallet: "M2.5 5h11v8h-11zM2.5 5l8-2.5V5M10.5 9h1",
   reports: "M3 13V8M6.5 13V4M10 13V7M13.5 13V2.5",
   internal: "M8 2.5l5 2v4c0 2.8-2.2 4.6-5 5-2.8-.4-5-2.2-5-5v-4z",
+  components: "M2.5 2.5h4.5v4.5h-4.5zM9 2.5h4.5v4.5H9zM2.5 9h4.5v4.5h-4.5zM9 9h4.5v4.5H9z",
 };
 
 // ---------------------------------------------------------------------------
@@ -140,6 +142,10 @@ export function Sidebar(props: {
 
         <div className="nav-heading">Internal</div>
         <NavItem icon={ICON.internal} label="Matcher diagnostics" active={view === "diagnostics"} onClick={() => props.onView("diagnostics")} />
+        <a className="nav-item" href="/design-system">
+          <Icon d={ICON.components} />
+          <span>Design system</span>
+        </a>
       </nav>
 
       <div className="bottom">
@@ -291,7 +297,7 @@ export function ReviewTable(props: {
                 </td>
                 <td className="num">{money(p.totalCents)}</td>
                 <td>
-                  <span className={`pill ${p.tier === "high" ? "strong" : "review"}`}>{p.tier === "high" ? "Strong" : "Check"}</span>
+                  <AmTierPill tier={p.tier} />
                 </td>
               </tr>
             );
@@ -306,7 +312,6 @@ export function ReviewTable(props: {
 // History table
 // ---------------------------------------------------------------------------
 
-const OUTCOME: Record<string, string> = { applied: "Accepted", rejected: "Not a transfer", reversed: "Undone" };
 
 export function HistoryTable(props: {
   decided: ProposalView[];
@@ -357,13 +362,13 @@ export function HistoryTable(props: {
                 </td>
                 <td className="num">{money(p.totalCents)}</td>
                 <td>
-                  <span className={`pill ${p.status}`}>{p.source === "manual" && p.status === "applied" ? "Matched by hand" : OUTCOME[p.status] ?? p.status}</span>
+                  <AmStatusPill status={p.status} source={p.source} />
                 </td>
                 <td className="num" onClick={(e) => e.stopPropagation()}>
                   {p.status === "applied" && (
-                    <button className="btn ghost" disabled={props.busy} onClick={() => props.onUndo(p)}>
+                    <AmButton variant="ghost" disabled={props.busy} onClick={() => props.onUndo(p)}>
                       Undo
-                    </button>
+                    </AmButton>
                   )}
                 </td>
               </tr>
@@ -444,15 +449,15 @@ export function Drawer(props: {
         <div>
           <h2>{money(p.totalCents)} transfer</h2>
           <div className="meta">
-            {open && <span className={`pill ${p.tier === "high" ? "strong" : "review"}`}>{p.tier === "high" ? "Strong match" : "Check this one"}</span>}
-            {!open && <span className={`pill ${p.status}`}>{OUTCOME[p.status] ?? p.status}</span>}
-            <span className="pill">{KIND_LABEL[p.kind]}</span>
-            {p.source === "matcher" && <span className="pill">Score {p.confidence.toFixed(2)}</span>}
+            {open && <AmTierPill tier={p.tier} long />}
+            {!open && <AmStatusPill status={p.status} source={p.source} />}
+            <AmKindPill kind={p.kind} />
+            {p.source === "matcher" && <AmPill>Score {p.confidence.toFixed(2)}</AmPill>}
           </div>
         </div>
-        <button className="btn ghost close" onClick={props.onClose} aria-label="Close">
+        <AmButton variant="ghost" className="close" onClick={props.onClose} aria-label="Close">
           ✕
-        </button>
+        </AmButton>
       </div>
 
       <div className="drawer-body">
@@ -475,28 +480,13 @@ export function Drawer(props: {
 
         <div>
           <h3>Why this looks like a transfer</h3>
-          <ul className="checklist">
-            {p.reasons.map((r) => (
-              <li key={r}>
-                <span className={`mark ${isAgainst(r) ? "bad" : "ok"}`}>{isAgainst(r) ? "✗" : "✓"}</span>
-                {r}
-              </li>
-            ))}
-          </ul>
+          <AmCheckList items={p.reasons.map((r) => ({ key: r, label: r, state: isAgainst(r) ? "fail" : "pass" }))} />
         </div>
 
         {open && checks && (
           <div>
             <h3>Checked before anything is posted</h3>
-            <ul className="checklist">
-              {checks.map((c) => (
-                <li key={c.id}>
-                  <span className={`mark ${c.ok ? "ok" : "bad"}`}>{c.ok ? "✓" : "✗"}</span>
-                  {c.label}
-                  {!c.ok && c.detail ? ` (${c.detail})` : ""}
-                </li>
-              ))}
-            </ul>
+            <AmCheckList items={checks.map((c) => ({ key: c.id, label: c.label, state: c.ok ? "pass" : "fail", detail: c.detail }))} />
           </div>
         )}
 
@@ -513,17 +503,17 @@ export function Drawer(props: {
       <div className="drawer-foot">
         {open && !rejecting && (
           <>
-            <button className="btn" disabled={props.busy} onClick={() => setRejecting(true)}>
+            <AmButton disabled={props.busy} onClick={() => setRejecting(true)}>
               Not a transfer
-            </button>
+            </AmButton>
             <span className="spacer" />
             <span className="legend" aria-hidden="true">
               <span className="kbd">J</span>
               <span className="kbd">K</span> move <span className="kbd">A</span> accept
             </span>
-            <button className="btn primary" disabled={props.busy || (checks?.some((c) => !c.ok) ?? false)} onClick={props.onAccept}>
+            <AmButton variant="primary" disabled={props.busy || (checks?.some((c) => !c.ok) ?? false)} onClick={props.onAccept}>
               Accept match
-            </button>
+            </AmButton>
           </>
         )}
         {open && rejecting && (
@@ -531,13 +521,13 @@ export function Drawer(props: {
             <span>What&apos;s wrong with it?</span>
             <div className="row">
               {REJECT_REASONS.map((r) => (
-                <button key={r} className="btn" disabled={props.busy} onClick={() => props.onReject(r)}>
+                <AmButton key={r} disabled={props.busy} onClick={() => props.onReject(r)}>
                   {r}
-                </button>
+                </AmButton>
               ))}
-              <button className="btn ghost" onClick={() => setRejecting(false)}>
+              <AmButton variant="ghost" onClick={() => setRejecting(false)}>
                 Cancel
-              </button>
+              </AmButton>
             </div>
           </div>
         )}
@@ -550,9 +540,9 @@ export function Drawer(props: {
             </span>
             <span className="spacer" />
             {p.status === "applied" && (
-              <button className="btn" disabled={props.busy} onClick={props.onUndo}>
+              <AmButton disabled={props.busy} onClick={props.onUndo}>
                 Undo
-              </button>
+              </AmButton>
             )}
           </>
         )}
@@ -608,7 +598,7 @@ export function UnmatchedTable(props: {
                 {t.awaitingCounterpart && <span className="sub">Other side may not have arrived yet</span>}
               </td>
               <td>
-                <span className="pill">{t.category}</span>
+                <AmPill>{t.category}</AmPill>
               </td>
               <td className={`num ${t.amountCents > 0 ? "amt-in" : ""}`}>
                 {t.amountCents > 0 ? "+" : "−"}
@@ -869,7 +859,7 @@ export function PairedView(props: {
             <TSide p={p} legs={outs(p)} side="out" />
             <div className={`t-mid ${p.tier === "high" ? "strong" : "check"}`}>
               <span className={`t-gap ${slow ? "slow" : ""}`}>{gap}</span>
-              <span className={`pill ${p.tier === "high" ? "strong" : "review"}`}>{p.tier === "high" ? "Strong" : "Check"}</span>
+              <AmTierPill tier={p.tier} className="t-pill" />
             </div>
             <TSide p={p} legs={ins(p)} side="in" />
           </div>
@@ -905,13 +895,13 @@ function CaseLegs({ legs }: { legs: CaseLeg[] }) {
   );
 }
 
-const OUTCOME_PILL: Record<string, [string, string]> = {
-  strong: ["strong", "✓ Found, strong"],
-  check: ["review", "✓ Found, check"],
-  missed: ["rejected", "✗ Missed"],
-  wrong: ["rejected", "✗ Wrong pairing"],
-  ignored: ["strong", "✓ Ignored"],
-  proposed: ["rejected", "✗ Proposed"],
+const OUTCOME_PILL: Record<string, [AmPillTone, string]> = {
+  strong: ["positive", "✓ Found, strong"],
+  check: ["caution", "✓ Found, check"],
+  missed: ["negative", "✗ Missed"],
+  wrong: ["negative", "✗ Wrong pairing"],
+  ignored: ["positive", "✓ Ignored"],
+  proposed: ["negative", "✗ Proposed"],
 };
 
 export function DiagnosticsView({ data }: { data: Diagnostics | null }) {
@@ -994,10 +984,10 @@ export function DiagnosticsView({ data }: { data: Diagnostics | null }) {
                   <CaseLegs legs={c.legs} />
                 </td>
                 <td>
-                  <span className="pill">{KIND_LABEL[c.kind]}</span>
+                  <AmPill>{KIND_LABEL[c.kind]}</AmPill>
                 </td>
                 <td>
-                  <span className={`pill ${OUTCOME_PILL[c.outcome][0]}`}>{OUTCOME_PILL[c.outcome][1]}</span>
+                  <AmPill tone={OUTCOME_PILL[c.outcome][0]}>{OUTCOME_PILL[c.outcome][1]}</AmPill>
                   {c.score !== null && <span className="sub">Score {c.score.toFixed(2)}</span>}
                 </td>
               </tr>
@@ -1027,9 +1017,9 @@ export function DiagnosticsView({ data }: { data: Diagnostics | null }) {
                   <CaseLegs legs={c.legs} />
                 </td>
                 <td>
-                  <span className={`pill ${OUTCOME_PILL[c.outcome][0]}`}>
+                  <AmPill tone={OUTCOME_PILL[c.outcome][0]}>
                     {c.outcome === "proposed" ? `✗ Proposed as ${c.tier === "high" ? "strong" : "check"}` : OUTCOME_PILL.ignored[1]}
-                  </span>
+                  </AmPill>
                   {c.score !== null && <span className="sub">Score {c.score.toFixed(2)}</span>}
                 </td>
               </tr>
@@ -1043,9 +1033,9 @@ export function DiagnosticsView({ data }: { data: Diagnostics | null }) {
         Feed bills, fuel, vet visits, cattle and hay sales, payroll, groceries on the personal account. None of it should be
         proposed. {t.ordinaryLeftAlone} of {t.ordinary} were left alone.
       </p>
-      <button className="btn" onClick={() => setShowOrdinary(!showOrdinary)}>
+      <AmButton onClick={() => setShowOrdinary(!showOrdinary)}>
         {showOrdinary ? "Hide" : "Show"} all {data.ordinary.length}
-      </button>
+      </AmButton>
       {showOrdinary && (
         <div className="table-wrap" style={{ marginTop: 10 }}>
           <table className="ledger">
@@ -1071,7 +1061,7 @@ export function DiagnosticsView({ data }: { data: Diagnostics | null }) {
                     {money(Math.abs(o.amountCents))}
                   </td>
                   <td>
-                    <span className={`pill ${o.proposed ? "rejected" : "strong"}`}>{o.proposed ? "✗ Proposed" : "✓ Left alone"}</span>
+                    <AmPill tone={o.proposed ? "negative" : "positive"}>{o.proposed ? "✗ Proposed" : "✓ Left alone"}</AmPill>
                   </td>
                 </tr>
               ))}
@@ -1087,25 +1077,17 @@ export function DiagnosticsView({ data }: { data: Diagnostics | null }) {
 // Consolidated statements: the businesses reported as one, for a lender
 // ---------------------------------------------------------------------------
 
-/** Accounting style: whole dollars, negatives in parentheses, zero as a dash. */
-const acct = (cents: number) => {
-  const d = Math.round(cents / 100);
-  if (d === 0) return "—";
-  const s = Math.abs(d).toLocaleString("en-US");
-  return d < 0 ? `(${s})` : s;
-};
-
 function StatementTable({ data, sections, totals }: { data: Consolidation; sections: Section[]; totals: ReportLine[] }) {
   const row = (l: ReportLine, cls = "") => (
     <tr key={`${cls}-${l.key}`} className={cls}>
       <td>{l.label}</td>
       {data.columns.map((c) => (
         <td className="num" key={c.id}>
-          {acct(l.byEntity[c.id])}
+          <AmMoney cents={l.byEntity[c.id]} format="accounting" />
         </td>
       ))}
-      <td className={`num elim ${l.eliminationCents ? "has" : ""}`}>{acct(l.eliminationCents)}</td>
-      <td className="num cons">{acct(l.consolidatedCents)}</td>
+      <td className={`num elim ${l.eliminationCents ? "has" : ""}`}><AmMoney cents={l.eliminationCents} format="accounting" /></td>
+      <td className="num cons"><AmMoney cents={l.consolidatedCents} format="accounting" /></td>
     </tr>
   );
   return (
@@ -1189,24 +1171,19 @@ export function ConsolidatedView(props: {
             ? "Ready to share with your lender"
             : `Not ready to share: ${blocking.length} ${blocking.length === 1 ? "thing" : "things"} to fix`}
         </h2>
-        <ul className="checklist">
-          {data.readiness.map((c) => (
-            <li key={c.id}>
-              <span className={`mark ${c.ok ? "ok" : c.severity === "block" ? "bad" : "warn"}`} aria-hidden="true">
-                {c.ok ? "✓" : c.severity === "block" ? "✗" : "!"}
-              </span>
-              <span className="what">
-                {c.label}
-                {!c.ok && c.detail && <span className="sub">{c.detail}</span>}
-              </span>
-              {!c.ok && c.action && (
-                <button className="btn link" onClick={() => go(c.action)}>
-                  {READY_ACTION[c.action]}
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
+        <AmCheckList
+          items={data.readiness.map((c) => ({
+            key: c.id,
+            label: c.label,
+            state: c.ok ? "pass" : c.severity === "block" ? "fail" : "warn",
+            detail: c.detail,
+            action: !c.ok && c.action && (
+              <AmButton variant="link" size="small" onClick={() => go(c.action)}>
+                {READY_ACTION[c.action]}
+              </AmButton>
+            ),
+          }))}
+        />
       </section>
 
       {data.columns.length > 1 && (
@@ -1220,9 +1197,9 @@ export function ConsolidatedView(props: {
               </p>
             </div>
             {pendingSales.length > 1 && (
-              <button className="btn" disabled={props.busy} onClick={() => props.onConfirmAll(pendingSales)}>
+              <AmButton disabled={props.busy} onClick={() => props.onConfirmAll(pendingSales)}>
                 Confirm all {pendingSales.length}
-              </button>
+              </AmButton>
             )}
           </div>
           <div className="table-wrap">
@@ -1262,21 +1239,21 @@ export function ConsolidatedView(props: {
                       <div className="actions">
                         {s.status === "pending" ? (
                           <>
-                            <button className="btn ghost" disabled={props.busy} onClick={() => props.onDecide(s, "dismissed")}>
+                            <AmButton variant="ghost" disabled={props.busy} onClick={() => props.onDecide(s, "dismissed")}>
                               Not between us
-                            </button>
-                            <button className="btn" disabled={props.busy} onClick={() => props.onDecide(s, "confirmed")}>
+                            </AmButton>
+                            <AmButton disabled={props.busy} onClick={() => props.onDecide(s, "confirmed")}>
                               Confirm
-                            </button>
+                            </AmButton>
                           </>
                         ) : (
                           <>
-                            <span className={`pill ${s.status === "confirmed" ? "applied" : ""}`}>
+                            <AmPill tone={s.status === "confirmed" ? "positive" : "neutral"}>
                               {s.status === "confirmed" ? "Eliminated" : "Kept as is"}
-                            </span>
-                            <button className="btn link" disabled={props.busy} onClick={() => props.onDecide(s, "undecided")}>
+                            </AmPill>
+                            <AmButton variant="link" disabled={props.busy} onClick={() => props.onDecide(s, "undecided")}>
                               Undo
-                            </button>
+                            </AmButton>
                           </>
                         )}
                       </div>

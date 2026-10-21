@@ -71,7 +71,7 @@ isn't running, the app notices and offers to run matching inline.
 Other commands:
 
 ```bash
-npm test           # 54 tests: matcher unit tests + service integration tests on real SQLite
+npm test           # 59 tests: matcher unit tests + service integration tests on real SQLite
 npm run eval       # precision / recall against ground truth -> data/eval_report.md
 npm run heldout    # held-out evaluation on an independent generator -> data/heldout_report.md
 npm run bench      # 8,000-customer fleet, large customers, worst case -> data/bench_report.md
@@ -99,6 +99,34 @@ npm run seed -- --synced   # start with sync 1 already imported and matched
   matcher case by case against the answer key.
 - **Working through a queue:** accepting moves straight to the next match;
   `J`/`K` move, `A` accepts, `X` selects. Every accept offers **Undo**.
+
+## Design system
+
+Built the way Ambrook describes in
+[How Engineers Design: Full-Stack Design Systems](https://ambrook.com/engineering/design-systems/how-engineers-design-full-stack-design-systems-at-ambrook):
+components are written once and used everywhere, and types are shared across the stack.
+
+- **`Am`-prefixed components in `design-system/`**, grouped by type:
+  `AmButton`, `AmPill`, `AmMoney`, `AmCheckList`, plus `AmTierPill`,
+  `AmStatusPill` and `AmKindPill` for backend values. App screens use only these.
+  Nothing else styles a button or a pill.
+- **Logic and presentation in separate files.** Behavior lives in
+  `AmButton.tsx`; presentation lives in `AmButton.module.css` beside it.
+  `AmButton` handles `href`, `onClick`, both, or neither, so every button looks
+  the same whatever it does. (Ambrook uses styled-components; CSS Modules give
+  the same split with no new dependency.)
+- **One color module.** `design-system/colors.ts` holds palettes indexed by
+  name and shade (`Colors.sage[60]`) and the semantic tokens components use. The
+  root layout turns them into CSS variables, so the stylesheet has no hex values.
+- **Full-stack types.** `lib/domain.ts` lists every match status, tier and kind.
+  The services and the components both use these types. `AmStatusPill` maps over
+  `Record<ProposalStatus, ...>`, so adding a status without a label fails the
+  build. A test reads `db/schema.sql` and fails if the database's CHECK
+  constraints drift from these lists.
+- **One formatter for money and dates.** The API sends integer cents; only
+  `AmMoney` and `design-system/format.ts` turn them into text.
+- **A gallery at `/design-system`** shows every component and variant, the job
+  Storybook does at Ambrook (sidebar: Internal → Design system).
 
 ## How it works
 
@@ -336,6 +364,7 @@ transfer for a person to match by hand, which is the status quo.
 | Software factory: idempotency keys on webhooks | Idempotent bank import; deduplicated job queue |
 | Review Mode: a personalized list to work through | Review queue with auto-advance and keyboard shortcuts |
 | Multi-entity: Ambrook Pay transfers "recorded in both sets of books" | Matched bank transfers booked on both entities' books |
+| Full-stack design system: `Am` components, logic and presentation apart, shared types | `design-system/`, `lib/domain.ts` checked against the schema, and a `/design-system` gallery |
 | Statements that match the business, for lenders (Inventory's market-value balance sheet) | Consolidated statements across entities, with eliminations and a readiness check |
 | Coding to Cut Carbon: splitting a cost across fields | Split transfers: one withdrawal across several deposits |
 
@@ -397,7 +426,8 @@ db/schema.sql               tables, indexes, invariants
 lib/matcher/                the pure matching algorithm (+ tests)
 lib/services/               import, jobs, matching runs, proposals, pre-flight, ledger, books, consolidation (+ tests)
 lib/org.ts                  the demo organization
-app/                        Next.js UI and API routes
+design-system/              Am components, colors, formatting
+app/                        Next.js UI and API routes (and the /design-system gallery)
 scripts/                    generate data, seed, worker, eval
 data/                       synthetic bank feed, ground truth, eval report
 ```

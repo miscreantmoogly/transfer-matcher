@@ -7,6 +7,7 @@ import type { CurrentUser } from "@/lib/auth";
 import type { Job } from "@/lib/services/jobs";
 import { businessDaysBetween } from "@/lib/dates";
 import { entityPhrase } from "@/lib/matcher/signals";
+import { formatMoney, formatMoneyWhole, formatShortDate } from "@/design-system/format";
 
 export type { ProposalView, LegView, BooksSummary, UnmatchedTxn, CurrentUser };
 
@@ -24,16 +25,10 @@ export type AppState = {
   audit: { id: number; at: string; actor: string; action: string; proposal_id: number | null; details: string | null }[];
 };
 
-const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
-const usdWhole = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
-
-export const money = (cents: number) => usd.format(cents / 100);
-export const moneyWhole = (cents: number) => usdWhole.format(Math.round(cents / 100));
-
-export function shortDate(iso: string): string {
-  const [y, m, d] = iso.split("-").map(Number);
-  return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
-}
+// Formatting lives in the design system so every screen shows money and dates the same way.
+export const money = formatMoney;
+export const moneyWhole = formatMoneyWhole;
+export const shortDate = formatShortDate;
 
 export function timeAgo(iso: string): string {
   const s = Math.round((Date.now() - new Date(iso).getTime()) / 1000);
@@ -99,11 +94,7 @@ export function plainEffects(p: ProposalView): string[] {
   return effects;
 }
 
-export const KIND_LABEL: Record<string, string> = {
-  same_entity: "Between your accounts",
-  intercompany: "Between your businesses",
-  owner: "Owner's personal account",
-};
+export { KIND_LABEL } from "@/design-system/pills/AmMatchPills";
 
 /** Reasons that count AGAINST the match get flagged in the UI. */
 export const isAgainst = (reason: string) =>

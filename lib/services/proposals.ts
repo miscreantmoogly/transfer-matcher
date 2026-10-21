@@ -9,6 +9,7 @@
 //   * runs in one database transaction, so the books never see half a match,
 //   * writes an audit log row.
 
+import type { MatchKind, MatchSource, MatchTier, ProposalStatus } from "../domain";
 import type { DB } from "../db";
 import { canSeeAll, type CurrentUser } from "../auth";
 import { badRequest, conflict, forbidden, notFound } from "../errors";
@@ -45,10 +46,10 @@ export type LegView = {
 
 export type ProposalView = {
   id: number;
-  status: string;
-  kind: "same_entity" | "intercompany" | "owner";
-  source: "matcher" | "manual";
-  tier: "high" | "review";
+  status: ProposalStatus;
+  kind: MatchKind;
+  source: MatchSource;
+  tier: MatchTier;
   confidence: number;
   reasons: string[];
   feeCents: number;
@@ -62,10 +63,10 @@ export type ProposalView = {
 
 type ProposalRow = {
   id: number;
-  status: string;
-  kind: "same_entity" | "intercompany" | "owner";
-  source: "matcher" | "manual";
-  tier: "high" | "review";
+  status: ProposalStatus;
+  kind: MatchKind;
+  source: MatchSource;
+  tier: MatchTier;
   confidence: number;
   reasons: string;
   legs_key: string;
