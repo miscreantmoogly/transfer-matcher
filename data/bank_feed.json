@@ -1166,6 +1166,14 @@
       "batch": 1
     },
     {
+      "providerTxnId": "ptx_0178rum1zl",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-10",
+      "amountCents": -450000,
+      "memo": "ONLINE TRANSFER TO R MILLER",
+      "batch": 1
+    },
+    {
       "providerTxnId": "ptx_0122kwtk47",
       "accountId": "cedar-sav",
       "postedDate": "2026-09-11",
@@ -1187,6 +1195,14 @@
       "postedDate": "2026-09-11",
       "amountCents": 150000,
       "memo": "AUTO TRANSFER FROM CHK ...4821",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0179jh5hr0",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-11",
+      "amountCents": 450000,
+      "memo": "DEPOSIT",
       "batch": 1
     },
     {
@@ -1294,7 +1310,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0178rum1zl",
+      "providerTxnId": "ptx_01800scup2",
       "accountId": "hollis-chk",
       "postedDate": "2026-09-21",
       "amountCents": -320000,
@@ -1310,7 +1326,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0179jh5hr0",
+      "providerTxnId": "ptx_0181r4o3ih",
       "accountId": "cedar-sav",
       "postedDate": "2026-09-22",
       "amountCents": 320000,

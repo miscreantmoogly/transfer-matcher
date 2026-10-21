@@ -296,6 +296,16 @@ traps.push({
   txns: [add("hollis-sav", "2026-07-21", 1_250_000, "SALE BARN PROCEEDS LOT 22")],
 });
 traps.push({
+  // The one that SHOULD fool the matcher into "review": transfer wording,
+  // round amount, next-day timing. Only a human knows R Miller is a neighbor
+  // being paid pasture rent. This is what the review tier is for.
+  id: "X6", label: "Pasture rent paid to a neighbor 'by transfer', next to an unrelated same-amount deposit",
+  txns: [
+    add("hollis-chk", "2026-09-10", -450_000, "ONLINE TRANSFER TO R MILLER"),
+    add("cedar-chk", "2026-09-11", 450_000, "DEPOSIT"),
+  ],
+});
+traps.push({
   id: "X5", label: "Payment to a trucker that says 'TRANSFER', next to an unrelated same-amount hay sale",
   txns: [
     add("hollis-chk", "2026-09-21", -320_000, "ONLINE TRANSFER TO J HAULING LLC"),

@@ -418,11 +418,19 @@
       ]
     },
     {
-      "id": "X5",
-      "label": "Payment to a trucker that says 'TRANSFER', next to an unrelated same-amount hay sale",
+      "id": "X6",
+      "label": "Pasture rent paid to a neighbor 'by transfer', next to an unrelated same-amount deposit",
       "txns": [
         "ptx_0178rum1zl",
         "ptx_0179jh5hr0"
+      ]
+    },
+    {
+      "id": "X5",
+      "label": "Payment to a trucker that says 'TRANSFER', next to an unrelated same-amount hay sale",
+      "txns": [
+        "ptx_01800scup2",
+        "ptx_0181r4o3ih"
       ]
     }
   ]

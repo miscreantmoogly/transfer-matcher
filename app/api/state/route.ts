@@ -20,5 +20,5 @@ export const GET = route(({ db, user }) => ({
   books: booksSummary(db, user),
   counts: counts(db),
   jobs: jobSummary(db),
-  audit: recentAudit(db),
+  audit: recentAudit(db, user, 60),
 }));

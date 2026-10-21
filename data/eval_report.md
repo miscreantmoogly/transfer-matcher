@@ -1,18 +1,18 @@
 # Transfer matcher evaluation
 
-179 bank transactions, 32 true transfers, 5 traps.
+181 bank transactions, 32 true transfers, 6 traps.
 
 ## Default config
 
 | Tier | Proposed | Correct | Precision |
 |---|---|---|---|
 | high (bulk-accept) | 22 | 22 | 100% |
-| review | 9 | 9 | 100% |
+| review | 10 | 9 | 90% |
 
 - **Recall (any tier):** 97% of true transfers proposed
 - **Auto recall (high tier only):** 69% handled with one click
-- **Overall precision:** 100%
-- Candidate pairs scored: 35; blocks: 28 (28 exact, 0 greedy); splits: 2
+- **Overall precision:** 97%
+- Candidate pairs scored: 36; blocks: 29 (29 exact, 0 greedy); splits: 2
 
 ### Missed transfers
 
@@ -20,7 +20,7 @@
 
 ### False positives
 
-None.
+- [review, 0.683] 2026-09-10 hollis-chk -4500.00 "ONLINE TRANSFER TO R MILLER"  <->  2026-09-11 cedar-chk 4500.00 "DEPOSIT"
 
 ### Recall by difficulty
 
@@ -34,20 +34,20 @@ None.
 
 | Window | Recall | Auto recall | Precision | High-tier precision | Candidate pairs |
 |---|---|---|---|---|---|
-| 1 | 69% | 56% | 96% | 100% | 24 |
-| 2 | 88% | 66% | 100% | 100% | 30 |
-| 3 | 91% | 66% | 100% | 100% | 32 |
-| 4 | 94% | 69% | 100% | 100% | 34 |
-| 5 | 97% | 69% | 100% | 100% | 35 |
-| 6 | 97% | 69% | 100% | 100% | 35 |
-| 7 | 97% | 69% | 100% | 100% | 35 |
+| 1 | 69% | 56% | 92% | 100% | 25 |
+| 2 | 88% | 66% | 97% | 100% | 31 |
+| 3 | 91% | 66% | 97% | 100% | 33 |
+| 4 | 94% | 69% | 97% | 100% | 35 |
+| 5 | 97% | 69% | 97% | 100% | 36 |
+| 6 | 97% | 69% | 97% | 100% | 36 |
+| 7 | 97% | 69% | 97% | 100% | 36 |
 
 ## Sweep: "high" threshold
 
 | High threshold | Auto recall | High-tier precision |
 |---|---|---|
-| 0.55 | 75% | 100% |
-| 0.65 | 69% | 100% |
+| 0.55 | 75% | 96% |
+| 0.65 | 69% | 96% |
 | 0.75 | 69% | 100% |
 | 0.85 | 66% | 100% |
 | 0.95 | 66% | 100% |
@@ -56,5 +56,5 @@ None.
 
 | Assignment | Recall | Precision | Missed |
 |---|---|---|---|
-| exact | 97% | 100% | T26 |
-| greedy | 91% | 97% | T26, T27, T28 |
+| exact | 97% | 97% | T26 |
+| greedy | 91% | 94% | T26, T27, T28 |

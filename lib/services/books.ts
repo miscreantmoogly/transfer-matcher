@@ -135,8 +135,25 @@ export function unmatchedTransactions(db: DB, user: CurrentUser): UnmatchedTxn[]
   }));
 }
 
-export function recentAudit(db: DB, limit = 15) {
-  return db.prepare("SELECT * FROM audit_log ORDER BY id DESC LIMIT ?").all(limit) as {
+/**
+ * Recent activity the user is allowed to see: events with no proposal (bank
+ * syncs, matcher runs) plus decisions on matches whose every leg is on an
+ * entity they can access. Otherwise the log would leak the other entity's data.
+ */
+export function recentAudit(db: DB, user: CurrentUser, limit = 15) {
+  return db
+    .prepare(
+      `SELECT a.* FROM audit_log a
+        WHERE a.proposal_id IS NULL
+           OR NOT EXISTS (
+             SELECT 1 FROM match_legs l
+               JOIN bank_transactions t ON t.id = l.transaction_id
+               JOIN bank_accounts ba ON ba.id = t.account_id
+              WHERE l.proposal_id = a.proposal_id
+                AND ba.entity_id NOT IN (SELECT entity_id FROM user_entity_access WHERE user_id = ?))
+        ORDER BY a.id DESC LIMIT ?`,
+    )
+    .all(user.id, limit) as {
     id: number;
     at: string;
     actor: string;
