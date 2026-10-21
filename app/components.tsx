@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
+  arrivalLabel,
   gapLabel,
   isAgainst,
-  matchTitle,
   money,
   moneyWhole,
   plainEffects,
@@ -17,378 +17,604 @@ import {
   type UnmatchedTxn,
 } from "./lib";
 
+export type View = "review" | "unmatched" | "books" | "history";
+
 // ---------------------------------------------------------------------------
-// A match: withdrawal stub(s) on the left, deposit stub(s) on the right,
-// joined by a bracket that says how far apart they posted.
+// Icons (16px, stroke-based)
 // ---------------------------------------------------------------------------
 
-function Stub({ leg }: { leg: LegView }) {
-  const out = leg.direction === "out";
+const Icon = ({ d }: { d: string }) => (
+  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d={d} />
+  </svg>
+);
+const ICONS: Record<View, string> = {
+  review: "M2 4.5h4l1 2h2l1-2h4M2 4.5v7h12v-7M4 2h8",
+  unmatched: "M2.5 4h11M2.5 8h11M2.5 12h7",
+  books: "M3 2.5h8.5v11H3zM5.5 5.5h3.5M5.5 8h3.5M13 4.5v9",
+  history: "M8 4.5V8l2.5 1.5M2.5 8a5.5 5.5 0 1 0 1.6-3.9M2.5 2.5v2.5H5",
+};
+
+// ---------------------------------------------------------------------------
+// Sidebar
+// ---------------------------------------------------------------------------
+
+export function Sidebar(props: {
+  state: AppState;
+  view: View;
+  onView: (v: View) => void;
+  userId: string;
+  onUser: (id: string) => void;
+  onReset: () => void;
+}) {
+  const { state } = props;
+  const items: [View, string, number | null][] = [
+    ["review", "Review", state.proposals.length || null],
+    ["unmatched", "Unmatched", state.counts.bankTransactions ? state.unmatched.length : null],
+    ["books", "Books", null],
+    ["history", "History", null],
+  ];
   return (
-    <div className="stub">
-      <div className="acct">
-        <b>{leg.accountName}</b>
-        <span>...{leg.last4}</span>
-        <span>{shortDate(leg.postedDate)}</span>
+    <aside className="sidebar">
+      <div className="org">
+        <div className="app">Transfer Matcher</div>
+        <div className="names">{state.books.entities.map((e) => e.entityName).join(", ")}</div>
       </div>
-      <div className={`amount ${out ? "out" : "in"}`}>
-        {out ? "−" : "+"}
-        {money(Math.abs(leg.amountCents))}
+      <nav className="nav" aria-label="Main">
+        {items.map(([id, label, n]) => (
+          <button key={id} aria-current={props.view === id ? "page" : undefined} onClick={() => props.onView(id)}>
+            <Icon d={ICONS[id]} />
+            {label}
+            {n !== null && <span className="n">{n}</span>}
+          </button>
+        ))}
+      </nav>
+      <div className="bottom">
+        <label>
+          Signed in as
+          <select value={props.userId} onChange={(e) => props.onUser(e.target.value)}>
+            {state.users.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button className="linkish" onClick={props.onReset}>
+          Reset demo data
+        </button>
       </div>
-      <div className="memo">{leg.memo}</div>
-      <div className="booked">Currently booked as {leg.importCategory}</div>
+    </aside>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Summary strip: the outcome, always visible on the Review page
+// ---------------------------------------------------------------------------
+
+export function Summary({ books }: { books: BooksSummary }) {
+  const removed = books.entities.reduce((s, e) => s + e.incomeBeforeCents - e.incomeNowCents, 0);
+  const owed = books.entities
+    .map((e) => ({
+      e,
+      net: e.dueFrom.reduce((s, d) => s + d.cents, 0) - e.dueTo.reduce((s, d) => s + d.cents, 0),
+      other: e.dueFrom[0]?.otherEntityName ?? e.dueTo[0]?.otherEntityName,
+    }))
+    .find((x) => x.net !== 0);
+  const healthy =
+    books.unbalancedEntries === 0 &&
+    (books.intercompanyNetCents ?? 0) === 0 &&
+    books.entities.every((e) => e.transfersInTransitCents === 0);
+  return (
+    <div className="summary">
+      <div>
+        <div className="k">Transfers taken out of income</div>
+        <div className="v">{moneyWhole(removed)}</div>
+      </div>
+      <div>
+        <div className="k">
+          {owed
+            ? owed.net > 0
+              ? `${owed.other} owes ${owed.e.entityName}`
+              : `${owed.e.entityName} owes ${owed.other}`
+            : "Owed between your businesses"}
+        </div>
+        <div className="v">{moneyWhole(owed ? Math.abs(owed.net) : 0)}</div>
+      </div>
+      <div>
+        <div className="k">Books check</div>
+        <div className={`v ${healthy ? "ok" : "bad"}`}>{healthy ? "✓ Balanced" : "✗ Needs attention"}</div>
+      </div>
     </div>
   );
 }
 
+// ---------------------------------------------------------------------------
+// Review table
+// ---------------------------------------------------------------------------
+
+function side(legs: LegView[]) {
+  if (legs.length === 1) return { title: `${legs[0].accountName} ...${legs[0].last4}`, sub: legs[0].entityName };
+  const entities = [...new Set(legs.map((l) => l.entityName))].join(", ");
+  return { title: `${legs.length} accounts`, sub: entities };
+}
+
+const outs = (p: ProposalView) => p.legs.filter((l) => l.direction === "out");
+const ins = (p: ProposalView) => p.legs.filter((l) => l.direction === "in");
+
+function SelectAll({ ids, selected, onChange }: { ids: number[]; selected: number[]; onChange: (ids: number[]) => void }) {
+  const all = ids.length > 0 && ids.every((id) => selected.includes(id));
+  const some = !all && ids.some((id) => selected.includes(id));
+  return (
+    <input
+      type="checkbox"
+      aria-label="Select all"
+      checked={all}
+      ref={(el) => {
+        if (el) el.indeterminate = some;
+      }}
+      onChange={() => onChange(all ? [] : ids)}
+    />
+  );
+}
+
+export function ReviewTable(props: {
+  proposals: ProposalView[];
+  selected: number[];
+  onSelect: (ids: number[]) => void;
+  openId: number | null;
+  onOpen: (id: number) => void;
+}) {
+  const { proposals, selected } = props;
+  const toggle = (id: number) => props.onSelect(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
+  return (
+    <div className="table-wrap">
+      <table className="ledger">
+        <thead>
+          <tr>
+            <th className="check">
+              <SelectAll ids={proposals.map((p) => p.id)} selected={selected} onChange={props.onSelect} />
+            </th>
+            <th>Date</th>
+            <th>From</th>
+            <th>To</th>
+            <th className="num">Amount</th>
+            <th>Match</th>
+          </tr>
+        </thead>
+        <tbody>
+          {proposals.length === 0 && (
+            <tr className="empty-row">
+              <td colSpan={6}>Nothing to review here.</td>
+            </tr>
+          )}
+          {proposals.map((p) => {
+            const from = side(outs(p));
+            const to = side(ins(p));
+            return (
+              <tr
+                key={p.id}
+                className={`${selected.includes(p.id) ? "is-selected" : ""} ${props.openId === p.id ? "is-open" : ""}`}
+                onClick={() => props.onOpen(p.id)}
+              >
+                <td className="check" onClick={(e) => e.stopPropagation()}>
+                  <input type="checkbox" aria-label={`Select match ${p.id}`} checked={selected.includes(p.id)} onChange={() => toggle(p.id)} />
+                </td>
+                <td className="date">
+                  {shortDate(outs(p)[0].postedDate)}
+                  <span className="sub">{gapLabel(p) === "same day" || gapLabel(p).endsWith("early") ? gapLabel(p) : `+${gapLabel(p)}`}</span>
+                </td>
+                <td>
+                  {from.title}
+                  <span className="sub">{from.sub}</span>
+                </td>
+                <td>
+                  {to.title}
+                  <span className="sub">{to.sub}</span>
+                </td>
+                <td className="num">{money(p.totalCents)}</td>
+                <td>
+                  <span className={`pill ${p.tier === "high" ? "strong" : "review"}`}>{p.tier === "high" ? "Strong" : "Check"}</span>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// History table
+// ---------------------------------------------------------------------------
+
+const OUTCOME: Record<string, string> = { applied: "Accepted", rejected: "Not a transfer", reversed: "Undone" };
+
+export function HistoryTable(props: {
+  decided: ProposalView[];
+  users: AppState["users"];
+  openId: number | null;
+  onOpen: (id: number) => void;
+  onUndo: (p: ProposalView) => void;
+  busy: boolean;
+}) {
+  const who = (id: string | null) => props.users.find((u) => u.id === id)?.name.split(" ")[0] ?? id ?? "";
+  return (
+    <div className="table-wrap">
+      <table className="ledger">
+        <thead>
+          <tr>
+            <th>Decided</th>
+            <th>From</th>
+            <th>To</th>
+            <th className="num">Amount</th>
+            <th>Outcome</th>
+            <th>
+              <span className="visually-hidden">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {props.decided.length === 0 && (
+            <tr className="empty-row">
+              <td colSpan={6}>Nothing decided yet.</td>
+            </tr>
+          )}
+          {props.decided.map((p) => {
+            const from = side(outs(p));
+            const to = side(ins(p));
+            return (
+              <tr key={p.id} className={props.openId === p.id ? "is-open" : ""} onClick={() => props.onOpen(p.id)}>
+                <td className="date">
+                  {p.decidedAt ? timeAgo(p.decidedAt) : ""}
+                  <span className="sub">{who(p.decidedBy)}</span>
+                </td>
+                <td>
+                  {from.title}
+                  <span className="sub">{from.sub}</span>
+                </td>
+                <td>
+                  {to.title}
+                  <span className="sub">{to.sub}</span>
+                </td>
+                <td className="num">{money(p.totalCents)}</td>
+                <td>
+                  <span className={`pill ${p.status}`}>{p.source === "manual" && p.status === "applied" ? "Matched by hand" : OUTCOME[p.status] ?? p.status}</span>
+                </td>
+                <td className="num" onClick={(e) => e.stopPropagation()}>
+                  {p.status === "applied" && (
+                    <button className="btn ghost" disabled={props.busy} onClick={() => props.onUndo(p)}>
+                      Undo
+                    </button>
+                  )}
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Detail drawer for one match
+// ---------------------------------------------------------------------------
+
 const REJECT_REASONS = ["Not the same money", "One side is a real purchase or sale", "Wrong pairing"];
 
-export function MatchCard(props: {
+function Leg({ leg }: { leg: LegView }) {
+  return (
+    <div className="leg">
+      <div className="top">
+        <div>
+          <div className="acct">
+            {leg.accountName} ...{leg.last4}
+          </div>
+          <div className="ent">
+            {leg.entityName}, {shortDate(leg.postedDate)}
+          </div>
+        </div>
+        <div className="amt">
+          {leg.amountCents < 0 ? "−" : "+"}
+          {money(Math.abs(leg.amountCents))}
+        </div>
+      </div>
+      <div className="memo">{leg.memo}</div>
+      <div className="booked">Booked as {leg.importCategory}</div>
+    </div>
+  );
+}
+
+export function Drawer(props: {
   p: ProposalView;
   busy: boolean;
-  /** Strong matches start collapsed so a long list is quick to skim. */
-  compact?: boolean;
-  onAccept?: () => void;
-  onReject?: (reason: string) => void;
-  onUndo?: () => void;
+  onClose: () => void;
+  onAccept: () => void;
+  onReject: (reason: string) => void;
+  onUndo: () => void;
 }) {
-  const { p, busy } = props;
+  const { p } = props;
   const [rejecting, setRejecting] = useState(false);
-  const [open, setOpen] = useState(!props.compact);
-  const decided = p.status !== "proposed";
-  const outs = p.legs.filter((l) => l.direction === "out");
-  const ins = p.legs.filter((l) => l.direction === "in");
-  const reasons = p.reasons;
-  const effects = plainEffects(p);
+  useEffect(() => setRejecting(false), [p.id]);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && props.onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [props]);
+  const open = p.status === "proposed";
 
   return (
-    <article className={`match ${decided ? "decided" : `tier-${p.tier}`}`} aria-label={`Match ${p.id}`}>
-      <div className="match-top">
-        <span className="match-title">
-          {money(p.totalCents)} from {matchTitle(p)}
-        </span>
-        {p.kind === "intercompany" && <span className="pill intercompany">Between your businesses</span>}
-        {!decided && p.tier === "high" && <span className="pill high">Ready to accept</span>}
-        {!decided && p.tier === "review" && <span className="pill review">Worth a look</span>}
-        {p.source === "manual" && <span className="pill neutral">Matched by hand</span>}
-        {decided && <span className={`pill ${p.status}`}>{statusLabel(p.status)}</span>}
-        <span className="score" title="Match score from 0 to 1. A ranking signal, not a probability.">
-          {p.source === "matcher" ? `Score ${p.confidence.toFixed(2)}` : ""}
-          {p.source === "matcher" && p.tier === "review" && p.confidence >= 0.75 && ". Fees and splits always get a person's look"}
-        </span>
-      </div>
-
-      <div className="pair">
-        <div className="side">
-          {outs.map((l) => (
-            <Stub key={l.transactionId} leg={l} />
-          ))}
-        </div>
-        <div className={`bracket ${p.kind}`} aria-hidden="true">
-          <span className="gap">{gapLabel(p)}</span>
-        </div>
-        <div className="side">
-          {ins.map((l) => (
-            <Stub key={l.transactionId} leg={l} />
-          ))}
-        </div>
-      </div>
-
-      {open && (
-      <div className="details">
+    <aside className="drawer" aria-label={`Match details`}>
+      <div className="drawer-head">
         <div>
-          <h4>Why we think these are one transfer</h4>
-          <ul>
-            {reasons.map((r) => (
-              <li key={r} className={isAgainst(r) ? "against" : ""}>
+          <h2>{money(p.totalCents)} transfer</h2>
+          <div className="meta">
+            {open && <span className={`pill ${p.tier === "high" ? "strong" : "review"}`}>{p.tier === "high" ? "Strong match" : "Check this one"}</span>}
+            {!open && <span className={`pill ${p.status}`}>{OUTCOME[p.status] ?? p.status}</span>}
+            <span className="pill">{p.kind === "intercompany" ? "Between your businesses" : "Between your accounts"}</span>
+            {p.source === "matcher" && <span className="pill">Score {p.confidence.toFixed(2)}</span>}
+          </div>
+        </div>
+        <button className="btn ghost close" onClick={props.onClose} aria-label="Close">
+          ✕
+        </button>
+      </div>
+
+      <div className="drawer-body">
+        <div>
+          <h3>Bank activity</h3>
+          <div className="legs">
+            <div className="leg-group">
+              {outs(p).map((l) => (
+                <Leg key={l.transactionId} leg={l} />
+              ))}
+            </div>
+            <div className="gap">{arrivalLabel(p)}</div>
+            <div className="leg-group">
+              {ins(p).map((l) => (
+                <Leg key={l.transactionId} leg={l} />
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3>Why this looks like a transfer</h3>
+          <ul className="checklist">
+            {p.reasons.map((r) => (
+              <li key={r}>
+                <span className={`mark ${isAgainst(r) ? "bad" : "ok"}`}>{isAgainst(r) ? "✗" : "✓"}</span>
                 {r}
               </li>
             ))}
           </ul>
         </div>
+
         <div>
-          <h4>{decided ? "What this did to your books" : "If you accept"}</h4>
-          <ul>
-            {effects.map((e) => (
+          <h3>{open ? "If you accept" : "What changed in your books"}</h3>
+          <ul className="effects">
+            {plainEffects(p).map((e) => (
               <li key={e}>{e}</li>
             ))}
           </ul>
         </div>
       </div>
-      )}
 
-      <div className="match-actions">
-        {!decided && !rejecting && (
+      <div className="drawer-foot">
+        {open && !rejecting && (
           <>
-            <span className="grow">Nothing changes until you accept. You can undo it later.</span>
-            {props.compact && (
-              <button className="btn quiet small" aria-expanded={open} onClick={() => setOpen(!open)}>
-                {open ? "Hide details" : "Why, and what changes"}
-              </button>
-            )}
-            <button className="btn danger" disabled={busy} onClick={() => setRejecting(true)}>
+            <button className="btn" disabled={props.busy} onClick={() => setRejecting(true)}>
               Not a transfer
             </button>
-            <button className="btn primary" disabled={busy} onClick={props.onAccept}>
+            <span className="spacer" />
+            <button className="btn primary" disabled={props.busy} onClick={props.onAccept}>
               Accept match
             </button>
           </>
         )}
-        {!decided && rejecting && (
-          <div className="reject-reasons">
+        {open && rejecting && (
+          <div className="reasons-pick">
             <span>What&apos;s wrong with it?</span>
-            {REJECT_REASONS.map((r) => (
-              <button key={r} className="btn small" disabled={busy} onClick={() => props.onReject?.(r)}>
-                {r}
+            <div className="row">
+              {REJECT_REASONS.map((r) => (
+                <button key={r} className="btn" disabled={props.busy} onClick={() => props.onReject(r)}>
+                  {r}
+                </button>
+              ))}
+              <button className="btn ghost" onClick={() => setRejecting(false)}>
+                Cancel
               </button>
-            ))}
-            <button className="btn quiet small" onClick={() => setRejecting(false)}>
-              Cancel
-            </button>
+            </div>
           </div>
         )}
-        {decided && (
+        {!open && (
           <>
-            <span className="grow">
-              {statusLabel(p.status)} {p.decidedAt ? timeAgo(p.decidedAt) : ""}
-              {p.status === "rejected" && " · won't be suggested again"}
-              {p.status === "reversed" && " · reversing entries posted, originals kept for the audit trail"}
+            <span className="hint" style={{ margin: 0 }}>
+              {p.status === "applied" && "Undo posts reversing entries. Nothing is deleted."}
+              {p.status === "rejected" && "This pairing won't be suggested again."}
+              {p.status === "reversed" && "Reversed. The original entries stay in the audit trail."}
             </span>
-            {props.compact && (
-              <button className="btn quiet small" aria-expanded={open} onClick={() => setOpen(!open)}>
-                {open ? "Hide details" : "Details"}
-              </button>
-            )}
+            <span className="spacer" />
             {p.status === "applied" && (
-              <button className="btn small" disabled={busy} onClick={props.onUndo}>
+              <button className="btn" disabled={props.busy} onClick={props.onUndo}>
                 Undo
               </button>
             )}
           </>
         )}
       </div>
-    </article>
+    </aside>
   );
 }
 
-function statusLabel(status: string) {
-  return { applied: "Accepted", rejected: "Marked not a transfer", reversed: "Undone", superseded: "Replaced" }[status] ?? status;
-}
-
 // ---------------------------------------------------------------------------
-// Unmatched transactions, with manual matching for what the matcher missed.
+// Unmatched transactions
 // ---------------------------------------------------------------------------
 
 export function UnmatchedTable(props: {
   txns: UnmatchedTxn[];
-  busy: boolean;
-  onMatch: (ids: number[]) => void;
+  selected: number[];
+  onSelect: (ids: number[]) => void;
 }) {
-  const [selected, setSelected] = useState<number[]>([]);
-  const [likelyOnly, setLikelyOnly] = useState(true);
-  // "Could be a transfer" = the import couldn't recognize it as a purchase or
-  // sale. Feed bills and cattle sales are hidden so the haystack is small.
-  const likely = (t: UnmatchedTxn) => t.category.startsWith("Uncategorized");
-  const shown = props.txns.filter((t) => !likelyOnly || likely(t) || selected.includes(t.id));
-  const chosen = props.txns.filter((t) => selected.includes(t.id));
-  const out = -chosen.filter((t) => t.amountCents < 0).reduce((s, t) => s + t.amountCents, 0);
-  const inn = chosen.filter((t) => t.amountCents > 0).reduce((s, t) => s + t.amountCents, 0);
-  const toggle = (id: number) => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
-
+  const { txns, selected } = props;
+  const toggle = (id: number) => props.onSelect(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
   return (
-    <>
-      <div className="filters">
-        <label>
-          <input type="checkbox" checked={likelyOnly} onChange={(e) => setLikelyOnly(e.target.checked)} /> Only show
-          lines that could be transfers
-        </label>
-        <span>
-          {shown.length} of {props.txns.length}
-        </span>
-      </div>
-      <table className="table">
+    <div className="table-wrap">
+      <table className="ledger">
         <thead>
           <tr>
-            <th>
-              <span className="visually-hidden">Select</span>
+            <th className="check">
+              <SelectAll ids={txns.map((t) => t.id)} selected={selected} onChange={props.onSelect} />
             </th>
             <th>Date</th>
             <th>Account</th>
-            <th>Bank memo</th>
-            <th style={{ textAlign: "right" }}>Amount</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th className="num">Amount</th>
           </tr>
         </thead>
         <tbody>
-          {shown.map((t) => (
-            <tr key={t.id} className={selected.includes(t.id) ? "selected" : ""}>
-              <td>
-                <input
-                  type="checkbox"
-                  aria-label={`Select ${t.memo}`}
-                  checked={selected.includes(t.id)}
-                  onChange={() => toggle(t.id)}
-                />
+          {txns.length === 0 && (
+            <tr className="empty-row">
+              <td colSpan={6}>Nothing left unmatched.</td>
+            </tr>
+          )}
+          {txns.map((t) => (
+            <tr key={t.id} className={selected.includes(t.id) ? "is-selected" : ""} onClick={() => toggle(t.id)}>
+              <td className="check" onClick={(e) => e.stopPropagation()}>
+                <input type="checkbox" aria-label={`Select ${t.memo}`} checked={selected.includes(t.id)} onChange={() => toggle(t.id)} />
               </td>
-              <td style={{ whiteSpace: "nowrap" }}>{shortDate(t.postedDate)}</td>
+              <td className="date">{shortDate(t.postedDate)}</td>
               <td>
-                {t.accountName} <span className="sub">{t.entityName}</span>
+                {t.accountName} ...{t.last4}
+                <span className="sub">{t.entityName}</span>
               </td>
-              <td className="memo">
+              <td>
                 {t.memo}
-                <span className="sub">
-                  Booked as {t.category}
-                  {t.awaitingCounterpart && ". The other side may not have arrived yet"}
-                </span>
+                {t.awaitingCounterpart && <span className="sub">Other side may not have arrived yet</span>}
               </td>
-              <td className="num">{money(t.amountCents)}</td>
+              <td>
+                <span className="pill">{t.category}</span>
+              </td>
+              <td className={`num ${t.amountCents > 0 ? "amt-in" : ""}`}>
+                {t.amountCents > 0 ? "+" : "−"}
+                {money(Math.abs(t.amountCents))}
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
-      {selected.length > 0 && (
-        <div className="selectionbar" role="region" aria-label="Selected transactions">
-          <span className="grow">
-            {selected.length} selected: {money(out)} out, {money(inn)} in
-            {out > 0 && inn > 0 && out !== inn && `, off by ${money(out - inn)}`}
-          </span>
-          <button className="btn quiet small" style={{ color: "#fff" }} onClick={() => setSelected([])}>
-            Clear
-          </button>
-          <button
-            className="btn small"
-            disabled={props.busy || out === 0 || inn === 0}
-            onClick={() => {
-              props.onMatch(selected);
-              setSelected([]);
-            }}
-          >
-            Match as one transfer
-          </button>
-        </div>
-      )}
-    </>
+    </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// The books: what the owner actually cares about.
+// Books
 // ---------------------------------------------------------------------------
 
-export function BooksPanel({ books }: { books: BooksSummary }) {
+export function BooksView({ books }: { books: BooksSummary }) {
   return (
-    <section className="panel" aria-labelledby="books-h">
-      <h2 id="books-h">Your books</h2>
-      <p className="lede">Income as the bank import booked it, and after the transfers you&apos;ve matched.</p>
-      {books.entities.map((e) => {
-        const removed = e.incomeBeforeCents - e.incomeNowCents;
-        const owed = e.dueFrom.filter((d) => d.cents !== 0);
-        const owes = e.dueTo.filter((d) => d.cents !== 0);
-        return (
-          <div className="entity" key={e.entityId}>
-            <h3>{e.entityName}</h3>
-            <div className="row">
-              <span className="label">Income</span>
-              <span className="val">
-                {removed !== 0 && <span className="was">{moneyWhole(e.incomeBeforeCents)}</span>}
-                {moneyWhole(e.incomeNowCents)}
-              </span>
-            </div>
-            <div className="row">
-              <span className="label">Expenses</span>
-              <span className="val">
-                {e.expenseBeforeCents !== e.expenseNowCents && <span className="was">{moneyWhole(e.expenseBeforeCents)}</span>}
-                {moneyWhole(e.expenseNowCents)}
-              </span>
-            </div>
-            {owed.map((d) => (
-              <div className="row" key={`from-${d.otherEntityName}`}>
-                <span className="label">Owed by {d.otherEntityName}</span>
-                <span className="val">{moneyWhole(d.cents)}</span>
-              </div>
-            ))}
-            {owes.map((d) => (
-              <div className="row" key={`to-${d.otherEntityName}`}>
-                <span className="label">Owes {d.otherEntityName}</span>
-                <span className="val">{moneyWhole(d.cents)}</span>
-              </div>
-            ))}
-            {removed > 0 && (
-              <div className="delta">{moneyWhole(removed)} that was just your own money moving is no longer counted as income.</div>
-            )}
+    <div className="books">
+      {books.entities.map((e) => (
+        <section className="book" key={e.entityId}>
+          <h2>{e.entityName}</h2>
+          <div className="line">
+            <span className="l">Income</span>
+            <span className="r">
+              {e.incomeBeforeCents !== e.incomeNowCents && <span className="was">{moneyWhole(e.incomeBeforeCents)}</span>}
+              {moneyWhole(e.incomeNowCents)}
+            </span>
           </div>
-        );
-      })}
-      <h3 style={{ fontSize: 13, color: "var(--muted)", margin: "12px 0 6px" }}>Checks</h3>
-      <ul className="checks">
-        <li>
-          <span className={books.unbalancedEntries === 0 ? "ok" : "bad"}>{books.unbalancedEntries === 0 ? "✓" : "✗"}</span>
-          Every entry balances (debits = credits)
-        </li>
+          <div className="line">
+            <span className="l">Expenses</span>
+            <span className="r">
+              {e.expenseBeforeCents !== e.expenseNowCents && <span className="was">{moneyWhole(e.expenseBeforeCents)}</span>}
+              {moneyWhole(e.expenseNowCents)}
+            </span>
+          </div>
+          {e.dueFrom.map((d) => (
+            <div className="line" key={`f-${d.otherEntityName}`}>
+              <span className="l">Owed by {d.otherEntityName}</span>
+              <span className="r">{moneyWhole(d.cents)}</span>
+            </div>
+          ))}
+          {e.dueTo.map((d) => (
+            <div className="line" key={`t-${d.otherEntityName}`}>
+              <span className="l">Owed to {d.otherEntityName}</span>
+              <span className="r">{moneyWhole(d.cents)}</span>
+            </div>
+          ))}
+          <div className="line">
+            <span className="l">Transfers in transit</span>
+            <span className="r">{moneyWhole(e.transfersInTransitCents)}</span>
+          </div>
+        </section>
+      ))}
+      <section className="book">
+        <h2>Checks</h2>
+        <div className="line">
+          <span className="l">Every entry balances</span>
+          <span className={`r ${books.unbalancedEntries === 0 ? "ok" : "bad"}`}>{books.unbalancedEntries === 0 ? "✓" : `✗ ${books.unbalancedEntries}`}</span>
+        </div>
         {books.intercompanyNetCents !== null && (
-          <li>
-            <span className={books.intercompanyNetCents === 0 ? "ok" : "bad"}>{books.intercompanyNetCents === 0 ? "✓" : "✗"}</span>
-            What your businesses owe each other nets to {money(books.intercompanyNetCents)}
-          </li>
+          <div className="line">
+            <span className="l">Amounts owed between businesses net to zero</span>
+            <span className={`r ${books.intercompanyNetCents === 0 ? "ok" : "bad"}`}>
+              {books.intercompanyNetCents === 0 ? "✓" : `✗ ${money(books.intercompanyNetCents)}`}
+            </span>
+          </div>
         )}
-        <li>
-          <span className={books.entities.every((e) => e.transfersInTransitCents === 0) ? "ok" : "bad"}>
+        <div className="line">
+          <span className="l">Nothing stuck in transit</span>
+          <span className={`r ${books.entities.every((e) => e.transfersInTransitCents === 0) ? "ok" : "bad"}`}>
             {books.entities.every((e) => e.transfersInTransitCents === 0) ? "✓" : "✗"}
           </span>
-          No money stuck &quot;in transit&quot;
-        </li>
-      </ul>
-    </section>
+        </div>
+      </section>
+    </div>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Activity: the audit log, in sentences.
+// Activity log
 // ---------------------------------------------------------------------------
 
 export function Activity({ audit, users }: { audit: AppState["audit"]; users: AppState["users"] }) {
   const who = (actor: string) =>
-    actor.startsWith("system") ? "The matcher" : (users.find((u) => u.id === actor)?.name.split(" ")[0] ?? actor);
-  const describe = (a: AppState["audit"][number]) => {
+    actor.startsWith("system") ? "Matcher" : (users.find((u) => u.id === actor)?.name.split(" ")[0] ?? actor);
+  const rows = groupAccepts(audit.filter(isNews)).slice(0, 12);
+  const describe = (a: (typeof rows)[number]) => {
     const d = a.details ? JSON.parse(a.details) : {};
+    if (a.count > 1) return `${who(a.actor)} accepted ${a.count} matches`;
     switch (a.action) {
       case "bank_sync":
-        return <><b>{who(a.actor)}</b> synced the bank: {d.inserted} new transactions</>;
+        return `${who(a.actor)} synced the bank: ${d.inserted} new transactions`;
       case "match_run":
-        return <><b>{who(a.actor)}</b> found {d.created} new match{d.created === 1 ? "" : "es"}{d.superseded ? `, replaced ${d.superseded}` : ""}</>;
+        return `${who(a.actor)} found ${d.created} new match${d.created === 1 ? "" : "es"}`;
       case "accept":
-        return <><b>{who(a.actor)}</b> accepted match #{a.proposal_id}</>;
+        return `${who(a.actor)} accepted match #${a.proposal_id}`;
       case "reject":
-        return <><b>{who(a.actor)}</b> marked #{a.proposal_id} not a transfer: {d.reason}</>;
+        return `${who(a.actor)} marked #${a.proposal_id} not a transfer (${d.reason})`;
       case "undo":
-        return <><b>{who(a.actor)}</b> undid match #{a.proposal_id}</>;
+        return `${who(a.actor)} undid match #${a.proposal_id}`;
       case "manual_match":
-        return <><b>{who(a.actor)}</b> matched #{a.proposal_id} by hand</>;
+        return `${who(a.actor)} matched #${a.proposal_id} by hand`;
       default:
-        return <><b>{who(a.actor)}</b> {a.action}</>;
+        return `${who(a.actor)}: ${a.action}`;
     }
   };
+  if (rows.length === 0) return null;
   return (
-    <section className="panel" aria-labelledby="activity-h">
-      <h2 id="activity-h">Activity</h2>
-      {audit.length === 0 ? (
-        <p className="lede">Nothing yet.</p>
-      ) : (
-        <ul className="activity">
-          {groupAccepts(audit.filter(isNews)).slice(0, 10).map((a) => (
-            <li key={a.id}>
-              {a.count > 1 ? (
-                <>
-                  <b>{who(a.actor)}</b> accepted {a.count} matches
-                </>
-              ) : (
-                describe(a)
-              )}{" "}
-              <span className="when">{timeAgo(a.at)}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </section>
+    <ul className="activity">
+      {rows.map((a) => (
+        <li key={a.id}>
+          <span>{describe(a)}</span>
+          <span className="when">{timeAgo(a.at)}</span>
+        </li>
+      ))}
+    </ul>
   );
 }
 
@@ -399,7 +625,7 @@ function isNews(a: AppState["audit"][number]) {
   return d.created > 0 || d.superseded > 0;
 }
 
-/** "Accept all 20" writes 20 audit rows; show them as one line. */
+/** "Accept 20" writes 20 audit rows; show them as one line. */
 function groupAccepts(audit: AppState["audit"]) {
   const out: (AppState["audit"][number] & { count: number })[] = [];
   for (const a of audit) {
@@ -408,41 +634,4 @@ function groupAccepts(audit: AppState["audit"]) {
     else out.push({ ...a, count: 1 });
   }
   return out;
-}
-
-// ---------------------------------------------------------------------------
-// Demo walkthrough: the order to show things in. Collapsible.
-// ---------------------------------------------------------------------------
-
-export function Guide({ state, open, onToggle }: { state: AppState; open: boolean; onToggle: () => void }) {
-  const s = state;
-  const steps: [string, boolean][] = [
-    ["Sync the bank to pull in July–September", s.counts.bankTransactions > 0],
-    ["Accept the matches marked ready", s.counts.applied > 0 && !s.proposals.some((p) => p.tier === "high")],
-    ["Work through the ones worth a look (one of them isn't a transfer)", s.counts.applied > 0 && !s.proposals.some((p) => p.tier === "review")],
-    ["In Unmatched, pair the $2,350 paper check with its deposit by hand", s.decided.some((p) => p.source === "manual")],
-    ["Undo a match, then watch the books go back", s.decided.some((p) => p.status === "reversed")],
-    ["Sync again: a late deposit arrives and gets matched", (s.counts.latestPostedDate ?? "") > "2026-09-25"],
-    ["Switch to Dana, who only keeps Hollis Ranch's books", s.user.id === "dana"],
-  ];
-  const current = steps.findIndex(([, done]) => !done);
-  return (
-    <section className="guide" aria-labelledby="guide-h">
-      <div className="guide-head">
-        <h2 id="guide-h">Demo walkthrough</h2>
-        <button className="btn quiet small" onClick={onToggle} aria-expanded={open}>
-          {open ? "Hide" : "Show"}
-        </button>
-      </div>
-      {open && (
-        <ol>
-          {steps.map(([label, done], i) => (
-            <li key={label} className={done ? "done" : i === current ? "current" : ""}>
-              {label}
-            </li>
-          ))}
-        </ol>
-      )}
-    </section>
-  );
 }

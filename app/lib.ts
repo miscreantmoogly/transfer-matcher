@@ -91,3 +91,11 @@ export function plainEffects(p: ProposalView): string[] {
 
 /** Reasons that count AGAINST the match get flagged in the UI. */
 export const isAgainst = (reason: string) => reason.includes("looks like a real") || reason.includes("points to a different");
+
+/** Short phrase for when the deposit landed relative to the withdrawal. */
+export function arrivalLabel(p: ProposalView): string {
+  const g = gapLabel(p);
+  if (g === "same day") return "Arrived the same day";
+  if (g.endsWith("early")) return "Deposit posted 1 day before";
+  return `Arrived ${g} later`;
+}

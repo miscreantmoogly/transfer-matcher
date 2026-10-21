@@ -401,3 +401,17 @@ export function manualMatch(db: DB, user: CurrentUser, transactionIds: number[])
     })
     .immediate();
 }
+
+/** Reject many at once; same per-item transactions and reporting as bulkAccept. */
+export function bulkReject(db: DB, user: CurrentUser, items: { id: number; version: number }[], reason: string) {
+  const results: { id: number; ok: boolean; error?: string }[] = [];
+  for (const item of items) {
+    try {
+      rejectProposal(db, user, item.id, item.version, reason);
+      results.push({ id: item.id, ok: true });
+    } catch (e) {
+      results.push({ id: item.id, ok: false, error: e instanceof Error ? e.message : String(e) });
+    }
+  }
+  return results;
+}

@@ -5,7 +5,7 @@ legal entities, proposes matches for a human to review, and books the accepted
 ones as balanced journal entries, so transfers stop showing up as income and
 expenses.
 
-![Review queue](docs/screenshot-review.png)
+![Review queue with a split transfer open](docs/screenshot-review.png)
 
 ## The problem
 
@@ -47,8 +47,8 @@ npm run dev        # http://localhost:3000
 npm run worker     # in a second terminal: the background matcher
 ```
 
-Then follow the **Demo walkthrough** panel in the app. If the worker isn't
-running, the app notices and offers to run matching inline.
+Click **Sync bank** to import the first batch of bank activity. If the worker
+isn't running, the app notices and offers to run matching inline.
 
 Other commands:
 
