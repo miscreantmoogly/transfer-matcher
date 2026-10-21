@@ -103,8 +103,8 @@ flowchart TD
     E --> F[Exact max-weight assignment per block<br/>bitmask DP; greedy fallback if huge]
     F --> G[Bounded subset-sum on leftovers<br/>splits of up to 3 pieces]
     G --> H{score >= 0.75 and not a split or fee?}
-    H -- yes --> High[Strong: bulk-acceptable]
-    H -- no --> Review[Check: needs a closer look]
+    H -- yes --> High["Strong (bulk-acceptable)"]
+    H -- no --> Review["Check (closer look)"]
 ```
 
 **Scoring** (`lib/matcher/score.ts`): date closeness (45% weight), exact amount,
