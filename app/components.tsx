@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import {
   arrivalLabel,
   gapLabel,
+  linkingTokens,
   isAgainst,
   money,
   moneyWhole,
@@ -304,7 +305,7 @@ export function HistoryTable(props: {
 
 const REJECT_REASONS = ["Not the same money", "One side is a real purchase or sale", "Wrong pairing"];
 
-function Leg({ leg }: { leg: LegView }) {
+function Leg({ p, leg }: { p: ProposalView; leg: LegView }) {
   return (
     <div className="leg">
       <div className="top">
@@ -321,7 +322,9 @@ function Leg({ leg }: { leg: LegView }) {
           {money(Math.abs(leg.amountCents))}
         </div>
       </div>
-      <div className="memo">{leg.memo}</div>
+      <div className="memo">
+        <Memo p={p} leg={leg} />
+      </div>
       <div className="booked">Booked as {leg.importCategory}</div>
     </div>
   );
@@ -368,13 +371,13 @@ export function Drawer(props: {
           <div className="legs">
             <div className="leg-group">
               {outs(p).map((l) => (
-                <Leg key={l.transactionId} leg={l} />
+                <Leg key={l.transactionId} p={p} leg={l} />
               ))}
             </div>
             <div className="gap">{arrivalLabel(p)}</div>
             <div className="leg-group">
               {ins(p).map((l) => (
-                <Leg key={l.transactionId} leg={l} />
+                <Leg key={l.transactionId} p={p} leg={l} />
               ))}
             </div>
           </div>
@@ -409,6 +412,10 @@ export function Drawer(props: {
               Not a transfer
             </button>
             <span className="spacer" />
+            <span className="legend" aria-hidden="true">
+              <span className="kbd">J</span>
+              <span className="kbd">K</span> move <span className="kbd">A</span> accept
+            </span>
             <button className="btn primary" disabled={props.busy} onClick={props.onAccept}>
               Accept match
             </button>
@@ -634,4 +641,107 @@ function groupAccepts(audit: AppState["audit"]) {
     else out.push({ ...a, count: 1 });
   }
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// Memo with the evidence highlighted
+// ---------------------------------------------------------------------------
+
+export function Memo({ p, leg }: { p: ProposalView; leg: LegView }) {
+  const tokens = linkingTokens(p, leg);
+  if (tokens.length === 0) return <>{leg.memo}</>;
+  const escaped = tokens.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const parts = leg.memo.split(new RegExp(`(${escaped.join("|")})`, "i"));
+  return (
+    <>
+      {parts.map((part, i) =>
+        tokens.some((t) => t.toUpperCase() === part.toUpperCase()) ? (
+          <mark key={i} title="Points at the other side of this match">
+            {part}
+          </mark>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Paired view: a T-chart. Money out on the left, money in on the right,
+// amounts meeting at the center line so they can be compared at a glance.
+// ---------------------------------------------------------------------------
+
+function TSide({ p, legs, side }: { p: ProposalView; legs: LegView[]; side: "out" | "in" }) {
+  return (
+    <div className={`t-side t-${side}`}>
+      {legs.map((l) => {
+        const short = side === "in" && p.feeCents > 0;
+        return (
+          <div className="t-leg" key={l.transactionId}>
+            <div className="t-text">
+              <div className="t-acct">
+                {l.accountName} ...{l.last4}
+              </div>
+              <div className="t-memo">
+                <Memo p={p} leg={l} />
+              </div>
+              <div className="t-meta">
+                {shortDate(l.postedDate)}, {l.entityName}
+              </div>
+            </div>
+            <div className={`t-amt ${short ? "short" : ""}`} title={short ? `${money(p.feeCents)} short` : undefined}>
+              {side === "out" ? "−" : "+"}
+              {money(Math.abs(l.amountCents))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export function PairedView(props: {
+  proposals: ProposalView[];
+  selected: number[];
+  onSelect: (ids: number[]) => void;
+  openId: number | null;
+  onOpen: (id: number) => void;
+}) {
+  const { proposals, selected } = props;
+  const toggle = (id: number) => props.onSelect(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
+  return (
+    <div className="tchart">
+      <div className="t-head">
+        <div className="check">
+          <SelectAll ids={proposals.map((p) => p.id)} selected={selected} onChange={props.onSelect} />
+        </div>
+        <div className="t-out">Money out</div>
+        <div className="t-mid" />
+        <div className="t-in">Money in</div>
+      </div>
+      {proposals.length === 0 && <div className="t-empty">Nothing to review here.</div>}
+      {proposals.map((p) => {
+        const gap = gapLabel(p);
+        const slow = /^[3-9] /.test(gap);
+        return (
+          <div
+            key={p.id}
+            className={`t-row ${selected.includes(p.id) ? "is-selected" : ""} ${props.openId === p.id ? "is-open" : ""}`}
+            onClick={() => props.onOpen(p.id)}
+          >
+            <div className="check" onClick={(e) => e.stopPropagation()}>
+              <input type="checkbox" aria-label={`Select match ${p.id}`} checked={selected.includes(p.id)} onChange={() => toggle(p.id)} />
+            </div>
+            <TSide p={p} legs={outs(p)} side="out" />
+            <div className={`t-mid ${p.tier === "high" ? "strong" : "check"}`}>
+              <span className={`t-gap ${slow ? "slow" : ""}`}>{gap}</span>
+              <span className={`pill ${p.tier === "high" ? "strong" : "review"}`}>{p.tier === "high" ? "Strong" : "Check"}</span>
+            </div>
+            <TSide p={p} legs={ins(p)} side="in" />
+          </div>
+        );
+      })}
+    </div>
+  );
 }

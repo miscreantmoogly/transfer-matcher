@@ -5,7 +5,7 @@ legal entities, proposes matches for a human to review, and books the accepted
 ones as balanced journal entries, so transfers stop showing up as income and
 expenses.
 
-![Review queue with a split transfer open](docs/screenshot-review.png)
+![Review queue in the paired (T-chart) view](docs/screenshot-review.png)
 
 ## The problem
 
@@ -58,6 +58,22 @@ npm run eval       # precision / recall against ground truth -> data/eval_report
 npm run generate   # regenerate the synthetic bank feed (deterministic, seeded)
 npm run seed -- --synced   # start with sync 1 already imported and matched
 ```
+
+## The review screen
+
+- **Paired view (default):** a T-chart. Money out on the left, money in on the
+  right, amounts meeting at the center line so they can be compared without
+  reading. Text in a memo that points at the other side (an account's last 4
+  digits, the other business's name, a shared wire reference) is highlighted,
+  so the evidence is visible, not just a score. A **List** view is one click away
+  for scanning many rows.
+- **Bulk actions:** checkboxes and select-all, then accept or reject. Each item
+  is its own database transaction, so one stale item doesn't block the rest.
+- **Detail drawer:** both bank lines, every reason behind the score, and what
+  accepting does to the books in plain words. It pushes the page over instead
+  of covering it, so both sides of the T stay visible.
+- **Working through a queue:** accepting moves straight to the next match;
+  `J`/`K` move, `A` accepts, `X` selects. Every accept offers **Undo**.
 
 ## How it works
 

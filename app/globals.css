@@ -312,3 +312,72 @@ table.ledger { width: 100%; border-collapse: collapse; }
 @media (max-width: 860px) { .toast { left: 16px; } }
 
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- Paired view (T-chart) ----------------------------------------------
+   Literally a T-account: a heading rule across the top, a vertical rule down
+   the middle. Each match is a line crossing the T, with the two amounts
+   meeting at the center so they can be compared without reading. */
+
+.tchart { border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; container-type: inline-size; }
+.t-head, .t-row { display: grid; grid-template-columns: 36px minmax(0, 1fr) 132px minmax(0, 1fr); align-items: stretch; }
+.t-head { border-bottom: 2px solid var(--ink); }
+.t-head > div { padding: 10px 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--subtle); }
+.t-head .t-out { text-align: right; }
+.t-head .t-mid { position: relative; }
+.t-head .t-mid::before { content: ""; position: absolute; top: 0; bottom: -2px; left: 50%; border-left: 2px solid var(--ink); }
+.t-head .check, .t-row .check { padding: 12px 0 0 12px; }
+.t-row { border-bottom: 1px solid var(--line); cursor: pointer; }
+.t-row:last-child { border-bottom: 0; }
+.t-row:hover { background: var(--hover); }
+.t-row.is-selected, .t-row.is-open { background: var(--selected); }
+.t-empty { padding: 28px; text-align: center; color: var(--muted); }
+
+.t-side { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; min-width: 0; }
+.t-leg { display: flex; gap: 14px; align-items: flex-start; }
+.t-out .t-leg { justify-content: flex-end; text-align: right; }
+.t-in .t-leg { flex-direction: row-reverse; justify-content: flex-end; }
+.t-text { min-width: 0; }
+.t-acct { font-weight: 500; }
+.t-memo { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 2px; overflow-wrap: anywhere; }
+.t-meta { font-size: 12px; color: var(--subtle); margin-top: 2px; }
+.t-amt { font-weight: 650; font-size: 15px; white-space: nowrap; padding-top: 1px; }
+.t-amt.short { color: var(--amber); text-decoration: underline dotted; text-underline-offset: 3px; }
+
+/* The center column: the T's vertical rule, crossed by this match's connector. */
+.t-mid { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 10px 0; }
+.t-row .t-mid::before { content: ""; position: absolute; top: 0; bottom: 0; left: 50%; border-left: 2px solid var(--ink); opacity: 0.85; }
+.t-row .t-mid::after { content: ""; position: absolute; left: 0; right: 0; top: 50%; border-top: 2px solid var(--sage); }
+.t-row .t-mid.check::after { border-top: 2px dashed var(--amber); }
+.t-gap, .t-mid .pill { position: relative; z-index: 1; }
+.t-gap { background: var(--surface); border: 1px solid var(--line-strong); border-radius: 999px; padding: 1px 8px; font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.t-gap.slow { color: var(--amber); border-color: var(--amber-weak); }
+.t-row.is-selected .t-gap, .t-row.is-open .t-gap { background: var(--selected); }
+
+mark { background: #f7e1b5; color: inherit; border-radius: 3px; padding: 0 2px; }
+
+.view-toggle { margin-left: auto; }
+.legend { font-size: 12.5px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+.kbd { font-family: var(--mono); font-size: 11px; border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; color: var(--muted); background: var(--surface); }
+.toast .action { margin-left: 12px; background: none; border: 0; padding: 0; color: var(--wheat); font-weight: 600; cursor: pointer; text-decoration: underline; }
+
+@media (max-width: 760px) {
+  .t-head, .t-row { grid-template-columns: 32px minmax(0, 1fr) 72px minmax(0, 1fr); }
+  .t-leg { flex-direction: column-reverse !important; gap: 2px; }
+  .t-out .t-leg { align-items: flex-end; }
+  .t-memo { display: none; }
+  .t-gap { font-size: 10.5px; padding: 1px 5px; }
+}
+
+/* The drawer pushes the page over instead of covering it, so both sides of
+   the T-chart stay visible while a match is open. */
+@media (min-width: 1100px) { main.with-drawer { padding-right: calc(min(460px, 100vw) + 24px); } }
+
+/* When the chart gets narrow (e.g. the drawer is open), drop the secondary
+   line and tighten the center so amounts and memos keep their room. */
+@container (max-width: 860px) {
+  .t-head, .t-row { grid-template-columns: 32px minmax(0, 1fr) 96px minmax(0, 1fr); }
+  .t-meta { display: none; }
+  .t-acct { font-size: 13px; }
+  .t-gap { font-size: 10.5px; padding: 1px 6px; }
+  .t-leg { gap: 10px; }
+}

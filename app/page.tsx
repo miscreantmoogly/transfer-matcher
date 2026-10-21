@@ -6,6 +6,7 @@ import {
   BooksView,
   Drawer,
   HistoryTable,
+  PairedView,
   ReviewTable,
   Sidebar,
   Summary,
@@ -15,6 +16,8 @@ import {
 import { money, type AppState, type ProposalView } from "./lib";
 
 type Filter = "all" | "high" | "review";
+type Layout = "paired" | "list";
+type Toast = { text: string; error?: boolean; action?: { label: string; run: () => void } };
 
 export default function Page() {
   const [userId, setUserId] = useState("wes");
@@ -27,9 +30,32 @@ export default function Page() {
   const [likelyOnly, setLikelyOnly] = useState(true);
   const [openId, setOpenId] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
-  const [toast, setToast] = useState<{ text: string; error?: boolean } | null>(null);
+  const [toast, setToast] = useState<Toast | null>(null);
+  const [layout, setLayout] = useState<Layout>("paired");
   const userRef = useRef(userId);
   userRef.current = userId;
+  const keyHandler = useRef<(e: KeyboardEvent) => void>(() => {});
+
+  // Remember the list/paired choice for this viewer (a convenience, so storage failures are ignored).
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("tm.layout");
+      if (saved === "list" || saved === "paired") setLayout(saved);
+    } catch {}
+  }, []);
+  const chooseLayout = (l: Layout) => {
+    setLayout(l);
+    try {
+      localStorage.setItem("tm.layout", l);
+    } catch {}
+  };
+
+  // Keyboard: J/K or arrows move through the queue, A accepts, X selects.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => keyHandler.current(e);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   // ---- Data ------------------------------------------------------------------
   const refresh = useCallback(async () => {
@@ -52,7 +78,7 @@ export default function Page() {
 
   useEffect(() => {
     if (!toast) return;
-    const t = setTimeout(() => setToast(null), 4000);
+    const t = setTimeout(() => setToast(null), toast.action ? 7000 : 4000);
     return () => clearTimeout(t);
   }, [toast]);
 
@@ -71,7 +97,7 @@ export default function Page() {
     setSelectedTxns((s) => (s.every((id) => liveTxns.has(id)) ? s : s.filter((id) => liveTxns.has(id))));
   }, [state]);
 
-  async function call(path: string, body: unknown, success: (result: any) => string) {
+  async function call(path: string, body: unknown, success: (result: any) => string | Toast) {
     setBusy(true);
     try {
       const res = await fetch(path, {
@@ -81,7 +107,8 @@ export default function Page() {
       });
       const result = await res.json();
       if (!res.ok) throw new Error(result.error ?? res.statusText);
-      setToast({ text: success(result) });
+      const message = success(result);
+      setToast(typeof message === "string" ? { text: message } : message);
       return result;
     } catch (e) {
       setToast({ text: e instanceof Error ? e.message : String(e), error: true });
@@ -126,6 +153,47 @@ export default function Page() {
     return ok === r.length ? `${verb} ${ok} match${ok === 1 ? "" : "es"}.` : `${verb} ${ok} of ${r.length}. The rest changed; check them again.`;
   };
 
+  // Accept / reject from the drawer, then move straight to the next match:
+  // reviewing is working through a list, not opening and closing items.
+  const neighbourOf = (id: number) => {
+    const i = shown.findIndex((p) => p.id === id);
+    return (shown[i + 1] ?? shown[i - 1])?.id ?? null;
+  };
+  const accept = (p: ProposalView) => {
+    const next = neighbourOf(p.id);
+    return call(`/api/proposals/${p.id}/accept`, { version: p.version }, (applied: ProposalView) => ({
+      text: `Accepted ${money(p.totalCents)}.`,
+      action: {
+        label: "Undo",
+        run: () => call(`/api/proposals/${applied.id}/undo`, { version: applied.version }, () => "Undone. Reversing entries posted."),
+      },
+    })).then((r) => r && setOpenId(next));
+  };
+  const reject = (p: ProposalView, reason: string) => {
+    const next = neighbourOf(p.id);
+    return call(`/api/proposals/${p.id}/reject`, { version: p.version, reason }, () => "Marked not a transfer.").then(
+      (r) => r && setOpenId(next),
+    );
+  };
+
+  keyHandler.current = (e: KeyboardEvent) => {
+    const target = e.target as HTMLElement;
+    if (view !== "review" || busy || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (["INPUT", "SELECT", "TEXTAREA"].includes(target.tagName) && (target as HTMLInputElement).type !== "checkbox") return;
+    const i = shown.findIndex((p) => p.id === openId);
+    if (e.key === "j" || e.key === "ArrowDown") {
+      e.preventDefault();
+      setOpenId(shown[Math.min(i + 1, shown.length - 1)]?.id ?? null);
+    } else if (e.key === "k" || e.key === "ArrowUp") {
+      e.preventDefault();
+      setOpenId(shown[Math.max(i - 1, 0)]?.id ?? null);
+    } else if (e.key === "a" && open && open.status === "proposed") {
+      accept(open);
+    } else if (e.key === "x" && open) {
+      setSelected((s) => (s.includes(open.id) ? s.filter((x) => x !== open.id) : [...s, open.id]));
+    }
+  };
+
   const sync = () =>
     call("/api/sync", { batch: nextBatch }, (r) =>
       r.inserted ? `Pulled in ${r.inserted} new transactions.` : "No new transactions.",
@@ -161,7 +229,7 @@ export default function Page() {
         }}
       />
 
-      <main>
+      <main className={open ? "with-drawer" : ""}>
         <div className="page-head">
           <h1>{titles[view]}</h1>
           {pendingJob && !workerDown && (
@@ -220,8 +288,25 @@ export default function Page() {
                       </button>
                     ))}
                   </div>
+                  {layout === "paired" && (
+                    <span className="legend">
+                      <mark>Highlighted</mark> text points at the other side
+                    </span>
+                  )}
+                  <div className="segmented view-toggle" role="group" aria-label="Layout">
+                    <button aria-pressed={layout === "paired"} onClick={() => chooseLayout("paired")}>
+                      Paired
+                    </button>
+                    <button aria-pressed={layout === "list"} onClick={() => chooseLayout("list")}>
+                      List
+                    </button>
+                  </div>
                 </div>
-                <ReviewTable proposals={shown} selected={selected} onSelect={setSelected} openId={openId} onOpen={setOpenId} />
+                {layout === "paired" ? (
+                  <PairedView proposals={shown} selected={selected} onSelect={setSelected} openId={openId} onOpen={setOpenId} />
+                ) : (
+                  <ReviewTable proposals={shown} selected={selected} onSelect={setSelected} openId={openId} onOpen={setOpenId} />
+                )}
                 {state.hiddenProposals > 0 && (
                   <p className="hint">
                     {state.hiddenProposals} more involve a business you don&apos;t have access to.
@@ -321,10 +406,8 @@ export default function Page() {
           p={open}
           busy={busy}
           onClose={() => setOpenId(null)}
-          onAccept={() => call(`/api/proposals/${open.id}/accept`, { version: open.version }, () => "Accepted.").then(() => setOpenId(null))}
-          onReject={(reason) =>
-            call(`/api/proposals/${open.id}/reject`, { version: open.version, reason }, () => "Marked not a transfer.").then(() => setOpenId(null))
-          }
+          onAccept={() => accept(open)}
+          onReject={(reason) => reject(open, reason)}
           onUndo={() => call(`/api/proposals/${open.id}/undo`, { version: open.version }, () => "Undone. Reversing entries posted.")}
         />
       )}
@@ -332,6 +415,18 @@ export default function Page() {
       {toast && (
         <div className={`toast ${toast.error ? "error" : ""}`} role={toast.error ? "alert" : "status"}>
           {toast.text}
+          {toast.action && (
+            <button
+              className="action"
+              onClick={() => {
+                const run = toast.action!.run;
+                setToast(null);
+                run();
+              }}
+            >
+              {toast.action.label}
+            </button>
+          )}
         </div>
       )}
     </div>

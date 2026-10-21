@@ -99,3 +99,27 @@ export function arrivalLabel(p: ProposalView): string {
   if (g.endsWith("early")) return "Deposit posted 1 day before";
   return `Arrived ${g} later`;
 }
+
+/**
+ * The bits of a memo that point at the OTHER side of the match: its account's
+ * last 4 digits, its entity's name, or a reference number both sides share.
+ * Highlighting them shows a reviewer the evidence instead of just a score.
+ */
+export function linkingTokens(p: ProposalView, leg: LegView): string[] {
+  const others = p.legs.filter((l) => l.direction !== leg.direction);
+  const tokens = new Set<string>();
+  for (const o of others) {
+    tokens.add(o.last4);
+    if (o.entityId !== leg.entityId) {
+      for (const word of o.entityName.toUpperCase().replace(/[^A-Z0-9 ]/g, " ").split(/\s+/)) {
+        if (word.length >= 3 && !GENERIC_NAME_WORDS.has(word)) tokens.add(word);
+      }
+    }
+    for (const ref of o.memo.match(/\d{4,}/g) ?? []) {
+      if (leg.memo.includes(ref) && !p.legs.some((l) => l.last4 === ref)) tokens.add(ref);
+    }
+  }
+  return [...tokens].filter((t) => new RegExp(`(^|[^A-Z0-9])${t}([^A-Z0-9]|$)`).test(leg.memo.toUpperCase()));
+}
+
+const GENERIC_NAME_WORDS = new Set(["CO", "LLC", "INC", "LTD", "CATTLE", "RANCH", "FARM", "FARMS", "THE", "AND", "COMPANY"]);
