@@ -50,6 +50,8 @@ export function findTransfers(input: MatchInput): MatchResult {
   const lookup: Lookup = {
     account: (id) => accounts.get(id) ?? fail(`unknown account ${id}`),
     entity: (id) => entities.get(id) ?? fail(`unknown entity ${id}`),
+    allLast4s: input.accounts.map((a) => a.last4),
+    allEntities: input.entities,
   };
   const byId = new Map(input.transactions.map((t) => [t.id, t]));
 

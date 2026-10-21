@@ -69,8 +69,10 @@ isn't running, the app notices and offers to run matching inline.
 Other commands:
 
 ```bash
-npm test           # 41 tests: matcher unit tests + service integration tests on real SQLite
+npm test           # 44 tests: matcher unit tests + service integration tests on real SQLite
 npm run eval       # precision / recall against ground truth -> data/eval_report.md
+npm run heldout    # held-out evaluation on an independent generator -> data/heldout_report.md
+npm run bench      # 8,000-customer fleet, large customers, worst case -> data/bench_report.md
 npm run generate   # regenerate the synthetic bank feed (deterministic, seeded)
 npm run seed -- --synced   # start with sync 1 already imported and matched
 ```
@@ -122,7 +124,10 @@ flowchart LR
 3. **Matcher** (`lib/matcher/`). A pure function: transactions in, plan out. No
    database, no clock, no network.
 4. **Review** (`lib/services/proposals.ts`). A person accepts, rejects, or undoes.
-   Nothing touches the books without a human decision.
+   Nothing touches the books without a human decision. Before anything is
+   posted, **pre-flight checks** (`lib/services/preflight.ts`) re-verify
+   permissions, freshness, double-booking, amounts, closed periods, and a dry
+   run of the journal entries, inside the same transaction as the write.
 5. **Ledger** (`lib/services/ledger.ts`). Append-only double entry. Accepting
    posts reclassification entries; undo posts reversing entries. Nothing is
    ever updated or deleted.
@@ -219,9 +224,62 @@ scoring weights, so this measures "does it handle the cases I thought of", not
 real-world accuracy. It's a regression harness. In production the honest metric
 is the reviewers' **rejection rate** on proposals, tracked over time.
 
+### Held-out test
+
+To check that, [`lib/stress.ts`](lib/stress.ts) is a second generator written
+*after* the weights were set: different memo wording (`XXXXXX4821`, `BOOK
+TRANSFER DEBIT`, `ACH CREDIT`), a realistic lag distribution, non-round
+transfers, and round-number commerce (land rent, loan payments, Zelle) that
+collides with transfer amounts. Each round is 25 customers x ~300 transactions.
+Each round that taught something led to a fix, and the next round used fresh
+seeds nobody had looked at:
+
+| | Round 1 | Round 2 | Round 3 (fresh) |
+|---|---|---|---|
+| Strong-tier precision, before that round's fix | 99.6% | 99.5% | |
+| Strong-tier precision, current matcher | 99.7% | 99.8% | **100% (663 / 663)** |
+| Recall, current matcher | 97.2% | 97.5% | **97.7%** |
+| Check-tier precision, current matcher | 91.0% | 93.4% | 92.0% |
+
+What the rounds taught: memos reference accounts in more formats than `...4821`
+(fixed); a memo naming a business outside the match is evidence against it, just
+like naming another account (fixed); and most Check-tier false positives are
+commerce the hard-coded categorizer doesn't recognize (**not** fixed with a
+longer word list: in production the customer's own vendor list and tagging
+history would supply that). Full report: [`data/heldout_report.md`](data/heldout_report.md).
+
+### Performance
+
+The realistic load is many customers with a few hundred transactions each, not
+one giant ledger: matching only looks back 120 days, matched transfers drop out,
+and each customer is its own job.
+
+| | |
+|---|---|
+| 8,000 customers x ~300 transactions, one core | 48 s total; median 5.7 ms, p99 13 ms per customer |
+| One customer with 3,000 / 10,000 transactions | 0.2 s / 1.4 s |
+| Demo customer end to end in SQLite (import + match) | 13 ms + 18 ms |
+
+The first benchmark run found matching growing much faster than the data (7.1 s
+for 3,000 transactions). Profiling showed a day-by-day business-day count and a
+brute-force split search; both were fixed (see [`data/bench_report.md`](data/bench_report.md)).
+
 Why precision over recall: a false positive hides real money (a $5,000 feed bill
 called a "transfer" disappears from expenses). A false negative just leaves a
 transfer for a person to match by hand, which is the status quo.
+
+## Where this borrows from Ambrook's playbook
+
+| Their idea (public writing) | Where it shows up here |
+|---|---|
+| PlanBrook / AmDo: AI drafts a plan, a person reviews it, deterministic code executes it | Matcher proposes, reviewer decides, journal entries are posted by deterministic code |
+| AmDo's pre-flight checks | Seven checks re-run inside the accept transaction and shown in the drawer |
+| AmDo executes "only what the reviewing user could do by hand" | Every apply runs with the reviewer's own entity permissions |
+| AI principle: deterministic foundations come first | Explainable scoring, no model, before anything learned |
+| Software factory: idempotency keys on webhooks | Idempotent bank import; deduplicated job queue |
+| Review Mode: a personalized list to work through | Review queue with auto-advance and keyboard shortcuts |
+| Multi-entity: Ambrook Pay transfers "recorded in both sets of books" | Matched bank transfers booked on both entities' books |
+| Coding to Cut Carbon: splitting a cost across fields | Split transfers: one withdrawal across several deposits |
 
 ## Design decisions and tradeoffs
 

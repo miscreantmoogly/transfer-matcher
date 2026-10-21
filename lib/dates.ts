@@ -34,22 +34,35 @@ export function addBusinessDays(iso: string, n: number): string {
   return formatDate(date);
 }
 
+/** Days since 1970-01-01 (a Thursday). Memoized: the same few hundred dates are compared millions of times. */
+const dayNumbers = new Map<string, number>();
+const dayNumber = (iso: string) => {
+  let n = dayNumbers.get(iso);
+  if (n === undefined) {
+    n = Math.round(parseDate(iso).getTime() / DAY_MS);
+    dayNumbers.set(iso, n);
+  }
+  return n;
+};
+
+// Weekdays among the first r days of a week that starts on a Thursday:
+// Thu Fri Sat Sun Mon Tue Wed -> 1 1 0 0 1 1 1, as running totals.
+const WEEKDAY_PREFIX = [0, 1, 2, 2, 2, 3, 4, 5];
+/** Number of weekdays among day numbers 0 .. n-1 (n >= 0). O(1). */
+const weekdaysBefore = (n: number) => Math.floor(n / 7) * 5 + WEEKDAY_PREFIX[n % 7];
+
 /**
  * Signed number of business days from `from` to `to`.
  * Fri -> Mon is 1, same day is 0, and Mon -> previous Fri is -1.
  * Counts weekdays in the half-open interval (from, to].
+ *
+ * Constant time: this runs for every candidate pair, so an earlier
+ * day-by-day loop made matching super-linear for large customers.
  */
 export function businessDaysBetween(from: string, to: string): number {
-  if (from === to) return 0;
-  const sign = to > from ? 1 : -1;
-  let a = parseDate(sign > 0 ? from : to);
-  const b = parseDate(sign > 0 ? to : from);
-  let count = 0;
-  while (a < b) {
-    a = new Date(a.getTime() + DAY_MS);
-    if (!isWeekend(a)) count++;
-  }
-  return sign * count;
+  const a = dayNumber(from);
+  const b = dayNumber(to);
+  return weekdaysBefore(b + 1) - weekdaysBefore(a + 1);
 }
 
 /** Every business day in [start, end], inclusive. */

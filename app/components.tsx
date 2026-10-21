@@ -406,6 +406,7 @@ function Leg({ p, leg }: { p: ProposalView; leg: LegView }) {
 
 export function Drawer(props: {
   p: ProposalView;
+  userId: string;
   busy: boolean;
   onClose: () => void;
   onAccept: () => void;
@@ -414,7 +415,20 @@ export function Drawer(props: {
 }) {
   const { p } = props;
   const [rejecting, setRejecting] = useState(false);
+  const [checks, setChecks] = useState<{ id: string; label: string; ok: boolean; detail?: string }[] | null>(null);
   useEffect(() => setRejecting(false), [p.id]);
+  // Pre-flight checks: the same ones the server re-runs inside the accept transaction.
+  useEffect(() => {
+    if (p.status !== "proposed") return setChecks(null);
+    let cancelled = false;
+    fetch(`/api/proposals/${p.id}/preflight`, { headers: { "x-user-id": props.userId } })
+      .then((r) => r.json())
+      .then((c) => !cancelled && setChecks(Array.isArray(c) ? c : null))
+      .catch(() => !cancelled && setChecks(null));
+    return () => {
+      cancelled = true;
+    };
+  }, [p.id, p.version, p.status, props.userId]);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && props.onClose();
     window.addEventListener("keydown", onKey);
@@ -469,6 +483,21 @@ export function Drawer(props: {
           </ul>
         </div>
 
+        {open && checks && (
+          <div>
+            <h3>Checked before anything is posted</h3>
+            <ul className="checklist">
+              {checks.map((c) => (
+                <li key={c.id}>
+                  <span className={`mark ${c.ok ? "ok" : "bad"}`}>{c.ok ? "✓" : "✗"}</span>
+                  {c.label}
+                  {!c.ok && c.detail ? ` (${c.detail})` : ""}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         <div>
           <h3>{open ? "If you accept" : "What changed in your books"}</h3>
           <ul className="effects">
@@ -490,7 +519,7 @@ export function Drawer(props: {
               <span className="kbd">J</span>
               <span className="kbd">K</span> move <span className="kbd">A</span> accept
             </span>
-            <button className="btn primary" disabled={props.busy} onClick={props.onAccept}>
+            <button className="btn primary" disabled={props.busy || (checks?.some((c) => !c.ok) ?? false)} onClick={props.onAccept}>
               Accept match
             </button>
           </>

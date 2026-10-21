@@ -54,16 +54,23 @@ export function sharedReferences(memoA: string, memoB: string, ignore: string[])
 }
 
 /** The account last-4s a memo references, written the way banks do: "...4821". */
-export function referencedLast4s(memo: string): string[] {
-  return memo.match(/\.\.\.(\d{4})/g)?.map((m) => m.slice(3)) ?? [];
+export function referencedLast4s(memo: string, knownLast4s: string[] = []): string[] {
+  // Two ways a memo names an account: the "...4821" style, or any of the
+  // customer's own account numbers as a standalone token ("FROM 4821",
+  // "XXXXXX4821"). The second was added after held-out testing showed
+  // formats the tuning data never used.
+  const dotted = memo.match(/\.\.\.(\d{4})/g)?.map((m) => m.slice(3)) ?? [];
+  const known = knownLast4s.filter((d) => mentionsLast4(memo, d));
+  return [...new Set([...dotted, ...known])];
 }
+
 
 /**
  * The memo names an account that is NOT one of the accounts in this pair:
  * it's pointing somewhere else, which is evidence against the match.
  */
-export function pointsElsewhere(memo: string, pairLast4s: string[]): boolean {
-  return referencedLast4s(memo).some((d) => !pairLast4s.includes(d));
+export function pointsElsewhere(memo: string, pairLast4s: string[], knownLast4s: string[] = []): boolean {
+  return referencedLast4s(memo, knownLast4s).some((d) => !pairLast4s.includes(d));
 }
 
 /**

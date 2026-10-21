@@ -38,6 +38,21 @@ describe("dates", () => {
     expect(businessDaysBetween("2026-08-10", "2026-08-07")).toBe(-1); // Mon -> previous Fri
     expect(addBusinessDays("2026-08-07", 1)).toBe("2026-08-10");
   });
+
+  it("the constant-time business-day count agrees with walking the calendar", () => {
+    const walk = (from: string, to: string) => {
+      const sign = to >= from ? 1 : -1;
+      const [lo, hi] = sign > 0 ? [from, to] : [to, from];
+      let n = 0;
+      for (let t = Date.parse(lo) + 86400000; t <= Date.parse(hi); t += 86400000) {
+        const day = new Date(t).getUTCDay();
+        if (day !== 0 && day !== 6) n++;
+      }
+      return sign * n || 0;
+    };
+    const days = Array.from({ length: 40 }, (_, i) => new Date(Date.UTC(2026, 5, 1 + i)).toISOString().slice(0, 10));
+    for (const a of days) for (const b of days) expect(businessDaysBetween(a, b)).toBe(walk(a, b));
+  });
 });
 
 describe("findTransfers: one-to-one", () => {

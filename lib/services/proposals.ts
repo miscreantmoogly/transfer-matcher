@@ -26,6 +26,7 @@ import { DEFAULT_CONFIG } from "../matcher/types";
 import { enqueue } from "./jobs";
 import { MATCH_JOB } from "./import";
 import { importCategoryOf, postEntry, postReversal, type EntryInput } from "./ledger";
+import { preflight } from "./preflight";
 
 export type LegView = {
   transactionId: number;
@@ -278,6 +279,9 @@ export function acceptProposal(db: DB, user: CurrentUser, id: number, version: n
   return db
     .transaction(() => {
       const view = loadForWrite(db, user, id, version, "proposed");
+      // Same checks the reviewer saw, re-run inside the write transaction.
+      const failed = preflight(db, user, view).filter((c) => !c.ok);
+      if (failed.length) throw conflict(`Pre-flight check failed: ${failed.map((c) => c.label).join("; ")}`, { failed });
       applyInTransaction(db, user, view, "accept");
       return getProposal(db, user, id);
     })

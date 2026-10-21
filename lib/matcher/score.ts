@@ -31,6 +31,7 @@ export const WEIGHTS = {
   sharedReference: 0.3,
   commercePenalty: -0.35, // per leg that looks like a real purchase or sale
   pointsElsewherePenalty: -0.3,
+  namesElsewherePenalty: -0.3,
   splitPenalty: -0.1,
 };
 
@@ -43,6 +44,10 @@ export function dateCloseness(gap: number): number {
 export type Lookup = {
   account: (id: string) => AccountInfo;
   entity: (id: string) => EntityInfo;
+  /** Every account number the customer has connected (for spotting memos that point elsewhere). */
+  allLast4s?: string[];
+  /** Every entity the customer has (for spotting memos that name a business outside this match). */
+  allEntities?: EntityInfo[];
 };
 
 export type GroupScore = {
@@ -155,7 +160,12 @@ export function scoreGroup(outs: MatchTxn[], ins: MatchTxn[], lookup: Lookup): G
       points += WEIGHTS.commercePenalty;
       reasons.push(`"${t.memo}" looks like a real ${t.amountCents < 0 ? "purchase" : "sale"}, not a transfer`);
     }
-    if (pointsElsewhere(t.memo, allLast4s)) {
+    const elsewhere = (lookup.allEntities ?? []).find((e) => !entityIds.has(e.id) && mentionsEntity(t.memo, e));
+    if (elsewhere) {
+      points += WEIGHTS.namesElsewherePenalty;
+      reasons.push(`"${t.memo}" names ${elsewhere.name}, which isn't part of this match`);
+    }
+    if (pointsElsewhere(t.memo, allLast4s, lookup.allLast4s)) {
       points += WEIGHTS.pointsElsewherePenalty;
       reasons.push(`"${t.memo}" points to a different account`);
     }

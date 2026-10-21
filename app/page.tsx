@@ -426,6 +426,7 @@ export default function Page() {
       {open && (
         <Drawer
           p={open}
+          userId={userId}
           busy={busy}
           onClose={() => setOpenId(null)}
           onAccept={() => accept(open)}

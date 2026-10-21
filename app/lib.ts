@@ -6,6 +6,7 @@ import type { BooksSummary, UnmatchedTxn } from "@/lib/services/books";
 import type { CurrentUser } from "@/lib/auth";
 import type { Job } from "@/lib/services/jobs";
 import { businessDaysBetween } from "@/lib/dates";
+import { entityPhrase } from "@/lib/matcher/signals";
 
 export type { ProposalView, LegView, BooksSummary, UnmatchedTxn, CurrentUser };
 
@@ -105,7 +106,8 @@ export const KIND_LABEL: Record<string, string> = {
 };
 
 /** Reasons that count AGAINST the match get flagged in the UI. */
-export const isAgainst = (reason: string) => reason.includes("looks like a real") || reason.includes("points to a different");
+export const isAgainst = (reason: string) =>
+  reason.includes("looks like a real") || reason.includes("points to a different") || reason.includes("isn't part of this match");
 
 /** Short phrase for when the deposit landed relative to the withdrawal. */
 export function arrivalLabel(p: ProposalView): string {
@@ -125,16 +127,11 @@ export function linkingTokens(p: ProposalView, leg: LegView): string[] {
   const tokens = new Set<string>();
   for (const o of others) {
     tokens.add(o.last4);
-    if (o.entityId !== leg.entityId) {
-      for (const word of o.entityName.toUpperCase().replace(/[^A-Z0-9 ]/g, " ").split(/\s+/)) {
-        if (word.length >= 3 && !GENERIC_NAME_WORDS.has(word)) tokens.add(word);
-      }
-    }
+    // The same name phrase the matcher looks for ("HOLLIS RANCH", not just "HOLLIS").
+    if (o.entityId !== leg.entityId) tokens.add(entityPhrase(o.entityName));
     for (const ref of o.memo.match(/\d{4,}/g) ?? []) {
       if (leg.memo.includes(ref) && !p.legs.some((l) => l.last4 === ref)) tokens.add(ref);
     }
   }
   return [...tokens].filter((t) => new RegExp(`(^|[^A-Z0-9])${t}([^A-Z0-9]|$)`).test(leg.memo.toUpperCase()));
 }
-
-const GENERIC_NAME_WORDS = new Set(["CO", "LLC", "INC", "LTD", "CATTLE", "RANCH", "FARM", "FARMS", "THE", "AND", "COMPANY"]);

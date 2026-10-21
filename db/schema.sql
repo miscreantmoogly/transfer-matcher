@@ -20,7 +20,9 @@ CREATE TABLE entities (
   name TEXT NOT NULL,
   -- 'personal' = the owner's own account, connected so draws and contributions
   -- can be recognized. Its activity is never part of any business's books.
-  kind TEXT NOT NULL DEFAULT 'business' CHECK (kind IN ('business', 'personal'))
+  kind TEXT NOT NULL DEFAULT 'business' CHECK (kind IN ('business', 'personal')),
+  -- Period lock: nothing may be posted on or before this date (e.g. after taxes are filed).
+  books_closed_through TEXT
 );
 
 CREATE TABLE users (

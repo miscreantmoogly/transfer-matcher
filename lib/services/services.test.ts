@@ -9,6 +9,7 @@ import { runMatching } from "./matchRun";
 import { claimNext, complete, enqueue, fail } from "./jobs";
 import { acceptProposal, bulkAccept, listProposals, manualMatch, rejectProposal, undoProposal } from "./proposals";
 import { booksSummary, unmatchedTransactions } from "./books";
+import { preflight } from "./preflight";
 
 let db: DB;
 const wes = () => loadUser(db, "wes");
@@ -106,6 +107,22 @@ describe("accepting a proposal", () => {
       { id: b.id, version: b.version + 99 }, // stale
     ]);
     expect(results.map((r) => r.ok)).toEqual([true, false]);
+  });
+});
+
+describe("pre-flight checks", () => {
+  it("all pass for an ordinary proposal", () => {
+    syncAndMatch();
+    const [p] = listProposals(db, wes(), ["proposed"]);
+    expect(preflight(db, wes(), p).every((c) => c.ok)).toBe(true);
+  });
+
+  it("block accepting into a closed period, even with a valid version", () => {
+    syncAndMatch();
+    const p = listProposals(db, wes(), ["proposed"]).find((x) => x.legs.every((l) => l.entityId === "cedar"))!;
+    db.prepare("UPDATE entities SET books_closed_through = '2026-12-31' WHERE id = 'cedar'").run();
+    expect(preflight(db, wes(), p).find((c) => c.id === "period")!.ok).toBe(false);
+    expect(() => acceptProposal(db, wes(), p.id, p.version)).toThrow(/Pre-flight check failed/);
   });
 });
 

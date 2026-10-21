@@ -12,7 +12,7 @@
 - **Recall (any tier):** 97% of true transfers proposed
 - **Auto recall (high tier only):** 74% handled with one click
 - **Overall precision:** 97%
-- Candidate pairs scored: 50; blocks: 34 (34 exact, 0 greedy); splits: 2
+- Candidate pairs scored: 50; blocks: 35 (35 exact, 0 greedy); splits: 2
 
 ### Missed transfers
 
