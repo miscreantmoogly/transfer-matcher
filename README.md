@@ -59,6 +59,8 @@ make it hard:
 Requires Node 20+.
 
 ```bash
+git clone https://github.com/miscreantmoogly/transfer-matcher.git
+cd transfer-matcher
 npm install
 npm run seed       # creates data/app.db (SQLite, no server needed)
 npm run dev        # http://localhost:3000
@@ -221,8 +223,9 @@ the family is what happens next: a lender to a multi-business operation looks at
 **all of it together**. Consolidating means adding the businesses up and then
 **eliminating** everything they did with each other, because a family can't owe
 itself money or earn income from itself. Ambrook customer McKinney Land & Cattle
-credits better financial statements with a $12M credit line at about 2 points
-lower; this is the multi-entity version of that report.
+[credits better financial statements](https://hpj.com/2025/12/26/ambrook-launches-inventory-feature-for-ag-operators/)
+with a $12M credit line at about 2 points lower; this is the multi-entity version
+of that report.
 
 Two kinds of activity between the businesses get eliminated, and the difference
 between them is the point of the project:
