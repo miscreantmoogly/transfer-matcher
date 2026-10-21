@@ -1,0 +1,429 @@
+{
+  "groups": [
+    {
+      "id": "T1",
+      "kind": "same_entity",
+      "difficulty": "easy",
+      "label": "Sweep to reserve savings",
+      "outs": [
+        "ptx_0107zewvv1"
+      ],
+      "ins": [
+        "ptx_0108745815"
+      ]
+    },
+    {
+      "id": "T2",
+      "kind": "same_entity",
+      "difficulty": "easy",
+      "label": "Fund equipment savings",
+      "outs": [
+        "ptx_0109euhv1e"
+      ],
+      "ins": [
+        "ptx_01102tr8bp"
+      ]
+    },
+    {
+      "id": "T3",
+      "kind": "intercompany",
+      "difficulty": "easy",
+      "label": "Son lends father's ranch operating cash",
+      "outs": [
+        "ptx_01114m44t3"
+      ],
+      "ins": [
+        "ptx_0112muub9h"
+      ]
+    },
+    {
+      "id": "T4",
+      "kind": "intercompany",
+      "difficulty": "easy",
+      "label": "Partial repayment to Cedar",
+      "outs": [
+        "ptx_0113kzgwnw"
+      ],
+      "ins": [
+        "ptx_01149sa67i"
+      ]
+    },
+    {
+      "id": "T5",
+      "kind": "same_entity",
+      "difficulty": "easy",
+      "label": "Pull from reserves for cattle purchase",
+      "outs": [
+        "ptx_0115os3raf"
+      ],
+      "ins": [
+        "ptx_0116x8eu8z"
+      ]
+    },
+    {
+      "id": "T6",
+      "kind": "same_entity",
+      "difficulty": "easy",
+      "label": "Pull from equipment savings",
+      "outs": [
+        "ptx_01173eswcg"
+      ],
+      "ins": [
+        "ptx_011803buzb"
+      ]
+    },
+    {
+      "id": "T7",
+      "kind": "intercompany",
+      "difficulty": "easy",
+      "label": "Intercompany loan",
+      "outs": [
+        "ptx_0119qlivuy"
+      ],
+      "ins": [
+        "ptx_0120z8uoqh"
+      ]
+    },
+    {
+      "id": "T8",
+      "kind": "intercompany",
+      "difficulty": "easy",
+      "label": "Repayment into Cedar savings",
+      "outs": [
+        "ptx_0121i47lnu"
+      ],
+      "ins": [
+        "ptx_0122kwtk47"
+      ]
+    },
+    {
+      "id": "T9",
+      "kind": "same_entity",
+      "difficulty": "easy",
+      "label": "Sweep to reserve savings",
+      "outs": [
+        "ptx_01233nf9ps"
+      ],
+      "ins": [
+        "ptx_012428lru4"
+      ]
+    },
+    {
+      "id": "T10",
+      "kind": "same_entity",
+      "difficulty": "easy",
+      "label": "Small top-up (same day as a $5,000 feed bill at Hollis)",
+      "outs": [
+        "ptx_0125ahoy6y"
+      ],
+      "ins": [
+        "ptx_012678nkxb"
+      ]
+    },
+    {
+      "id": "T11",
+      "kind": "intercompany",
+      "difficulty": "easy",
+      "label": "Intercompany transfer identified only by last-4 digits",
+      "outs": [
+        "ptx_0127xlb1ii"
+      ],
+      "ins": [
+        "ptx_01288oniio"
+      ]
+    },
+    {
+      "id": "T12",
+      "kind": "same_entity",
+      "difficulty": "easy",
+      "label": "Recurring auto-save",
+      "outs": [
+        "ptx_01290cjt92"
+      ],
+      "ins": [
+        "ptx_0130rb79ao"
+      ]
+    },
+    {
+      "id": "T13",
+      "kind": "same_entity",
+      "difficulty": "easy",
+      "label": "Recurring auto-save",
+      "outs": [
+        "ptx_01317y0yuc"
+      ],
+      "ins": [
+        "ptx_0132ex1plt"
+      ]
+    },
+    {
+      "id": "T14",
+      "kind": "same_entity",
+      "difficulty": "easy",
+      "label": "Recurring auto-save",
+      "outs": [
+        "ptx_01331bub81"
+      ],
+      "ins": [
+        "ptx_0134h9g2na"
+      ]
+    },
+    {
+      "id": "T15",
+      "kind": "same_entity",
+      "difficulty": "easy",
+      "label": "Recurring auto-save",
+      "outs": [
+        "ptx_013519zyv8"
+      ],
+      "ins": [
+        "ptx_0136pux588"
+      ]
+    },
+    {
+      "id": "T16",
+      "kind": "same_entity",
+      "difficulty": "easy",
+      "label": "Recurring auto-save",
+      "outs": [
+        "ptx_0137xmf4un"
+      ],
+      "ins": [
+        "ptx_0138ojel48"
+      ]
+    },
+    {
+      "id": "T17",
+      "kind": "same_entity",
+      "difficulty": "easy",
+      "label": "Recurring auto-save",
+      "outs": [
+        "ptx_01394r4rvc"
+      ],
+      "ins": [
+        "ptx_0140aykk29"
+      ]
+    },
+    {
+      "id": "T18",
+      "kind": "same_entity",
+      "difficulty": "easy",
+      "label": "Recurring auto-save",
+      "outs": [
+        "ptx_0141shxgc0"
+      ],
+      "ins": [
+        "ptx_0142sju8z0"
+      ]
+    },
+    {
+      "id": "T19",
+      "kind": "intercompany",
+      "difficulty": "medium",
+      "label": "Bland memos, with a same-amount cattle sale as a decoy",
+      "outs": [
+        "ptx_0143vlb9y1"
+      ],
+      "ins": [
+        "ptx_0144vcv9a8"
+      ]
+    },
+    {
+      "id": "T20",
+      "kind": "same_entity",
+      "difficulty": "medium",
+      "label": "Bland memos, 2-day lag",
+      "outs": [
+        "ptx_0145ptfc39"
+      ],
+      "ins": [
+        "ptx_01469sca9r"
+      ]
+    },
+    {
+      "id": "T21",
+      "kind": "intercompany",
+      "difficulty": "medium",
+      "label": "Bland memos, 3-day lag",
+      "outs": [
+        "ptx_01471ugm9z"
+      ],
+      "ins": [
+        "ptx_0148n2h307"
+      ]
+    },
+    {
+      "id": "T22",
+      "kind": "same_entity",
+      "difficulty": "medium",
+      "label": "Deposit posted a day BEFORE the withdrawal (banks post on different schedules)",
+      "outs": [
+        "ptx_0149hs0o2h"
+      ],
+      "ins": [
+        "ptx_0150iulbo0"
+      ]
+    },
+    {
+      "id": "T23",
+      "kind": "intercompany",
+      "difficulty": "hard",
+      "label": "Slow ACH: 4 business days",
+      "outs": [
+        "ptx_0151z2kyf9"
+      ],
+      "ins": [
+        "ptx_0152k8u23j"
+      ]
+    },
+    {
+      "id": "T24",
+      "kind": "intercompany",
+      "difficulty": "hard",
+      "label": "Slow ACH: 5 business days",
+      "outs": [
+        "ptx_01534e5iet"
+      ],
+      "ins": [
+        "ptx_01545ijtoa"
+      ]
+    },
+    {
+      "id": "T25",
+      "kind": "intercompany",
+      "difficulty": "hard",
+      "label": "Wire: receiving bank deducted a $15 fee, so amounts differ",
+      "outs": [
+        "ptx_01552gval1"
+      ],
+      "ins": [
+        "ptx_0156ykqb2g"
+      ]
+    },
+    {
+      "id": "T26",
+      "kind": "intercompany",
+      "difficulty": "hard",
+      "label": "Paper check between entities: no transfer wording at all",
+      "outs": [
+        "ptx_0157f18zad"
+      ],
+      "ins": [
+        "ptx_0158iib0ze"
+      ]
+    },
+    {
+      "id": "T27",
+      "kind": "intercompany",
+      "difficulty": "hard",
+      "label": "Identical same-week transfer #1 (greedy trap)",
+      "outs": [
+        "ptx_0159x0p593"
+      ],
+      "ins": [
+        "ptx_01609if2m7"
+      ]
+    },
+    {
+      "id": "T28",
+      "kind": "intercompany",
+      "difficulty": "hard",
+      "label": "Identical same-week transfer #2 (greedy trap)",
+      "outs": [
+        "ptx_0161cep76r"
+      ],
+      "ins": [
+        "ptx_0162uhj02q"
+      ]
+    },
+    {
+      "id": "T29",
+      "kind": "intercompany",
+      "difficulty": "hard",
+      "label": "Split: $50K out, lands as $30K + $20K",
+      "outs": [
+        "ptx_0163gduc6g"
+      ],
+      "ins": [
+        "ptx_0164hygt95",
+        "ptx_01658pqang"
+      ]
+    },
+    {
+      "id": "T30",
+      "kind": "intercompany",
+      "difficulty": "hard",
+      "label": "Merge: $9K + $6K out, lands as one $15K deposit",
+      "outs": [
+        "ptx_0166sntoue",
+        "ptx_0167p99ko4"
+      ],
+      "ins": [
+        "ptx_01684gfi72"
+      ]
+    },
+    {
+      "id": "T31",
+      "kind": "intercompany",
+      "difficulty": "medium",
+      "label": "Counterpart arrives in the NEXT bank sync",
+      "outs": [
+        "ptx_016923ckjf"
+      ],
+      "ins": [
+        "ptx_0170ev2t3u"
+      ]
+    },
+    {
+      "id": "T32",
+      "kind": "same_entity",
+      "difficulty": "easy",
+      "label": "Transfer entirely within the second sync",
+      "outs": [
+        "ptx_01718cmluf"
+      ],
+      "ins": [
+        "ptx_0172qafxb7"
+      ]
+    }
+  ],
+  "traps": [
+    {
+      "id": "X1",
+      "label": "Transfer to an account Ambrook can't see (no counterpart exists)",
+      "txns": [
+        "ptx_0173fwrzg5"
+      ]
+    },
+    {
+      "id": "X2",
+      "label": "Transfer that bounced back into the same account",
+      "txns": [
+        "ptx_0174knbug5",
+        "ptx_0175zgg17z"
+      ]
+    },
+    {
+      "id": "X3",
+      "label": "$5,000 feed bill at Hollis on the same day as Cedar's $5,000 savings top-up",
+      "txns": [
+        "ptx_01761vs55f"
+      ]
+    },
+    {
+      "id": "X4",
+      "label": "$12,500 cattle sale at Hollis savings, same day as the bland $12,500 transfer",
+      "txns": [
+        "ptx_0177s5vko4"
+      ]
+    },
+    {
+      "id": "X5",
+      "label": "Payment to a trucker that says 'TRANSFER', next to an unrelated same-amount hay sale",
+      "txns": [
+        "ptx_0178rum1zl",
+        "ptx_0179jh5hr0"
+      ]
+    }
+  ]
+}

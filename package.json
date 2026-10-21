@@ -1,0 +1,32 @@
+{
+  "name": "transfer-matcher",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Detects transfers between a business's own bank accounts and entities, proposes matches for human review, and books them as balanced journal entries.",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "generate": "tsx scripts/generate.ts",
+    "seed": "tsx scripts/seed.ts",
+    "worker": "tsx scripts/worker.ts",
+    "eval": "tsx scripts/eval.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "better-sqlite3": "12.11.1",
+    "next": "15.5.28",
+    "react": "19.1.1",
+    "react-dom": "19.1.1"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "7.6.13",
+    "@types/node": "22.15.21",
+    "@types/react": "19.1.10",
+    "@types/react-dom": "19.1.7",
+    "tsx": "4.20.5",
+    "typescript": "5.9.2",
+    "vitest": "3.2.4"
+  }
+}

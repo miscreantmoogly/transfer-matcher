@@ -1,0 +1,1441 @@
+{
+  "seed": 2027,
+  "period": [
+    "2026-07-01",
+    "2026-09-30"
+  ],
+  "transactions": [
+    {
+      "providerTxnId": "ptx_0046fxzntg",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-02",
+      "amountCents": -387776,
+      "memo": "PAYROLL - RANCH HANDS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00940b1x7b",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-02",
+      "amountCents": -377811,
+      "memo": "PAYROLL - RANCH HANDS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0107zewvv1",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-02",
+      "amountCents": -1500000,
+      "memo": "ONLINE TRANSFER TO SAV ...7730",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0108745815",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-07-02",
+      "amountCents": 1500000,
+      "memo": "ONLINE TRANSFER FROM CHK ...4821",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01290cjt92",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-03",
+      "amountCents": -150000,
+      "memo": "AUTO TRANSFER TO SAV ...7730",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0130rb79ao",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-07-03",
+      "amountCents": 150000,
+      "memo": "AUTO TRANSFER FROM CHK ...4821",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0001cbuvq9",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-06",
+      "amountCents": -147538,
+      "memo": "HIGH PLAINS FEED CO INV 2200",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0002byy5gw",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-06",
+      "amountCents": -68341,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0053be2nzt",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-06",
+      "amountCents": -498318,
+      "memo": "HIGH PLAINS FEED CO INV 3103",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0003o0mn52",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-07",
+      "amountCents": -61015,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00543nw47d",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-07",
+      "amountCents": -23092,
+      "memo": "VALLEY VET CLINIC",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0151z2kyf9",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-07",
+      "amountCents": -1600000,
+      "memo": "TRANSFER TO CEDAR CREEK CATTLE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0004lfhutp",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-08",
+      "amountCents": -224616,
+      "memo": "HIGH PLAINS FEED CO INV 4128",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0005m45dht",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-08",
+      "amountCents": 578706,
+      "memo": "USDA FSA PMT",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_005523jbyj",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-09",
+      "amountCents": -597991,
+      "memo": "HIGH PLAINS FEED CO INV 6422",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0109euhv1e",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-09",
+      "amountCents": -800000,
+      "memo": "ONLINE TRANSFER TO SAV ...3307",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0056ghnife",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-10",
+      "amountCents": -127859,
+      "memo": "VALLEY VET CLINIC",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0057wpzt78",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-10",
+      "amountCents": 163628,
+      "memo": "USDA FSA PMT",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01102tr8bp",
+      "accountId": "hollis-sav",
+      "postedDate": "2026-07-10",
+      "amountCents": 800000,
+      "memo": "ONLINE TRANSFER FROM CHK ...1956",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0006gtjp61",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-13",
+      "amountCents": -57949,
+      "memo": "PRAIRIE PROPANE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0058pdyli8",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-13",
+      "amountCents": -99970,
+      "memo": "VALLEY VET CLINIC",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0152k8u23j",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-13",
+      "amountCents": 1600000,
+      "memo": "TRANSFER FROM HOLLIS RANCH",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0007emay36",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-14",
+      "amountCents": -61082,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01114m44t3",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-14",
+      "amountCents": -4000000,
+      "memo": "TRANSFER TO HOLLIS RANCH",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0008qn6vad",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-15",
+      "amountCents": -88549,
+      "memo": "VALLEY VET CLINIC",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0009wso494",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-15",
+      "amountCents": -62466,
+      "memo": "PRAIRIE PROPANE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0059att5sz",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-15",
+      "amountCents": -545984,
+      "memo": "HIGH PLAINS FEED CO INV 7097",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0112muub9h",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-15",
+      "amountCents": 4000000,
+      "memo": "TRANSFER FROM CEDAR CREEK CATTLE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00105hemgc",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-16",
+      "amountCents": -470554,
+      "memo": "HIGH PLAINS FEED CO INV 3277",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0011c9ckty",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-16",
+      "amountCents": -391635,
+      "memo": "WESTERN EQUIP CO PARTS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0047te0s3n",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-16",
+      "amountCents": -355645,
+      "memo": "PAYROLL - RANCH HANDS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0060vl8iiq",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-16",
+      "amountCents": -87488,
+      "memo": "VALLEY VET CLINIC",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0095acr555",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-16",
+      "amountCents": -384426,
+      "memo": "PAYROLL - RANCH HANDS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0163gduc6g",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-16",
+      "amountCents": -5000000,
+      "memo": "TRANSFER TO HOLLIS RANCH",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00618ynfxz",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-17",
+      "amountCents": -45779,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01317y0yuc",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-17",
+      "amountCents": -150000,
+      "memo": "AUTO TRANSFER TO SAV ...7730",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0132ex1plt",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-07-17",
+      "amountCents": 150000,
+      "memo": "AUTO TRANSFER FROM CHK ...4821",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0164hygt95",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-17",
+      "amountCents": 3000000,
+      "memo": "TRANSFER FROM CEDAR CREEK CATTLE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01658pqang",
+      "accountId": "hollis-sav",
+      "postedDate": "2026-07-17",
+      "amountCents": 2000000,
+      "memo": "TRANSFER FROM CEDAR CREEK CATTLE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0012m6d9ng",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-20",
+      "amountCents": -21441,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0062de0h1s",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-20",
+      "amountCents": -545270,
+      "memo": "HIGH PLAINS FEED CO INV 6925",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0063nflk9p",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-20",
+      "amountCents": -8042,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0013jm7yd9",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-21",
+      "amountCents": 163064,
+      "memo": "HAY SALE DEPOSIT",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0143vlb9y1",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-21",
+      "amountCents": -1250000,
+      "memo": "WITHDRAWAL",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0177s5vko4",
+      "accountId": "hollis-sav",
+      "postedDate": "2026-07-21",
+      "amountCents": 1250000,
+      "memo": "SALE BARN PROCEEDS LOT 22",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0014xbno3l",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-22",
+      "amountCents": -51546,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0144vcv9a8",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-22",
+      "amountCents": 1250000,
+      "memo": "DEPOSIT",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0064kgc2uw",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-23",
+      "amountCents": -57279,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01552gval1",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-23",
+      "amountCents": -7500000,
+      "memo": "WIRE TRANSFER OUT HOLLIS RANCH LLC REF 88412",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0156ykqb2g",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-23",
+      "amountCents": 7498500,
+      "memo": "INCOMING WIRE CEDAR CREEK CATTLE CO REF 88412",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0065dx7gux",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-24",
+      "amountCents": -300940,
+      "memo": "HIGH PLAINS FEED CO INV 2793",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0066fgm4fu",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-27",
+      "amountCents": -438408,
+      "memo": "HIGH PLAINS FEED CO INV 5613",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0067pqwta9",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-27",
+      "amountCents": -32071,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0068lpqnla",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-28",
+      "amountCents": 5828382,
+      "memo": "SALE BARN PROCEEDS LOT 94",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0113kzgwnw",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-28",
+      "amountCents": -2200000,
+      "memo": "TRANSFER TO CEDAR CREEK CATTLE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00696zhwbx",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-29",
+      "amountCents": -179440,
+      "memo": "HIGH PLAINS FEED CO INV 8221",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0070a3kida",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-29",
+      "amountCents": -123029,
+      "memo": "VALLEY VET CLINIC",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0015bsjqfl",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-30",
+      "amountCents": -19044,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0048csgwqm",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-30",
+      "amountCents": -396068,
+      "memo": "PAYROLL - RANCH HANDS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0071hx74xt",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-30",
+      "amountCents": -586942,
+      "memo": "HIGH PLAINS FEED CO INV 2034",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00960892z8",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-30",
+      "amountCents": -314130,
+      "memo": "PAYROLL - RANCH HANDS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01149sa67i",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-30",
+      "amountCents": 2200000,
+      "memo": "TRANSFER FROM HOLLIS RANCH",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0125ahoy6y",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-07-30",
+      "amountCents": -500000,
+      "memo": "ONLINE TRANSFER TO CHK ...4821",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_012678nkxb",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-30",
+      "amountCents": 500000,
+      "memo": "ONLINE TRANSFER FROM SAV ...7730",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01761vs55f",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-30",
+      "amountCents": -500000,
+      "memo": "HIGH PLAINS FEED CO INV 7781",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0016lq9pm5",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-31",
+      "amountCents": -16824,
+      "memo": "VALLEY VET CLINIC",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0101xdjs94",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-07-31",
+      "amountCents": 2872,
+      "memo": "INTEREST PAYMENT",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0104037nk9",
+      "accountId": "hollis-sav",
+      "postedDate": "2026-07-31",
+      "amountCents": 3548,
+      "memo": "INTEREST PAYMENT",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01331bub81",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-31",
+      "amountCents": -150000,
+      "memo": "AUTO TRANSFER TO SAV ...7730",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0134h9g2na",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-07-31",
+      "amountCents": 150000,
+      "memo": "AUTO TRANSFER FROM CHK ...4821",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_007287rtro",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-03",
+      "amountCents": -596103,
+      "memo": "HIGH PLAINS FEED CO INV 4986",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0017el6kd4",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-04",
+      "amountCents": -58347,
+      "memo": "PRAIRIE PROPANE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0073z3zb6j",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-04",
+      "amountCents": -79619,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0115os3raf",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-08-04",
+      "amountCents": -3000000,
+      "memo": "ONLINE TRANSFER TO CHK ...4821",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0116x8eu8z",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-04",
+      "amountCents": 3000000,
+      "memo": "ONLINE TRANSFER FROM SAV ...7730",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0018ruc79k",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-06",
+      "amountCents": -278811,
+      "memo": "HIGH PLAINS FEED CO INV 5040",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0019lwqi3l",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-06",
+      "amountCents": -10693,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00748tov8g",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-06",
+      "amountCents": -338345,
+      "memo": "WESTERN EQUIP CO PARTS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01534e5iet",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-06",
+      "amountCents": -550000,
+      "memo": "ACH DEBIT HOLLIS RANCH",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00753qtfnq",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-07",
+      "amountCents": -21747,
+      "memo": "VALLEY VET CLINIC",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0020hu1dqj",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-10",
+      "amountCents": -546716,
+      "memo": "HIGH PLAINS FEED CO INV 8002",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00212seky5",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-10",
+      "amountCents": 858664,
+      "memo": "SALE BARN PROCEEDS LOT 10",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00769x9c4s",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-10",
+      "amountCents": -270976,
+      "memo": "HIGH PLAINS FEED CO INV 6373",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00775xhvqv",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-10",
+      "amountCents": -71308,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0127xlb1ii",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-11",
+      "amountCents": -1850000,
+      "memo": "ONLINE TRANSFER TO CHK ...1956",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0022v1054q",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-12",
+      "amountCents": -457449,
+      "memo": "HIGH PLAINS FEED CO INV 9564",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0023lx4idx",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-12",
+      "amountCents": -18180,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0078wfudh9",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-12",
+      "amountCents": 4764070,
+      "memo": "SALE BARN PROCEEDS LOT 39",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01288oniio",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-12",
+      "amountCents": 1850000,
+      "memo": "ONLINE TRANSFER FROM CHK ...4821",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0150iulbo0",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-12",
+      "amountCents": 1000000,
+      "memo": "ONLINE TRANSFER FROM SAV ...7730",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0049svpn5y",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-13",
+      "amountCents": -340850,
+      "memo": "PAYROLL - RANCH HANDS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0097jv7q4g",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-13",
+      "amountCents": -309508,
+      "memo": "PAYROLL - RANCH HANDS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0149hs0o2h",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-08-13",
+      "amountCents": -1000000,
+      "memo": "ONLINE TRANSFER TO CHK ...4821",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01545ijtoa",
+      "accountId": "hollis-sav",
+      "postedDate": "2026-08-13",
+      "amountCents": 550000,
+      "memo": "ACH CREDIT CEDAR CREEK CATTLE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0024ie5st6",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-14",
+      "amountCents": -147627,
+      "memo": "WESTERN EQUIP CO PARTS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00797t6a7t",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-14",
+      "amountCents": -160757,
+      "memo": "HIGH PLAINS FEED CO INV 4723",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_013519zyv8",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-14",
+      "amountCents": -150000,
+      "memo": "AUTO TRANSFER TO SAV ...7730",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0136pux588",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-08-14",
+      "amountCents": 150000,
+      "memo": "AUTO TRANSFER FROM CHK ...4821",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0159x0p593",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-08-17",
+      "amountCents": -250000,
+      "memo": "WITHDRAWAL",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0025rgnpuv",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-18",
+      "amountCents": -71936,
+      "memo": "HIGH PLAINS FEED CO INV 4043",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0080zyi0bu",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-18",
+      "amountCents": -76345,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0026sh2mwp",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-19",
+      "amountCents": -11724,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0081dbwgkp",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-19",
+      "amountCents": -442775,
+      "memo": "HIGH PLAINS FEED CO INV 4344",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01173eswcg",
+      "accountId": "hollis-sav",
+      "postedDate": "2026-08-19",
+      "amountCents": -600000,
+      "memo": "ONLINE TRANSFER TO CHK ...1956",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_011803buzb",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-19",
+      "amountCents": 600000,
+      "memo": "ONLINE TRANSFER FROM SAV ...3307",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01609if2m7",
+      "accountId": "hollis-sav",
+      "postedDate": "2026-08-19",
+      "amountCents": 250000,
+      "memo": "DEPOSIT",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0161cep76r",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-08-19",
+      "amountCents": -250000,
+      "memo": "WITHDRAWAL",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0173fwrzg5",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-20",
+      "amountCents": -1000000,
+      "memo": "ONLINE TRANSFER TO CHK ...9912",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00274jzs3w",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-21",
+      "amountCents": -45423,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0082gxxoue",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-21",
+      "amountCents": 1308298,
+      "memo": "SALE BARN PROCEEDS LOT 94",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0162uhj02q",
+      "accountId": "hollis-sav",
+      "postedDate": "2026-08-21",
+      "amountCents": 250000,
+      "memo": "DEPOSIT",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0028ae4ij1",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-24",
+      "amountCents": -197577,
+      "memo": "HIGH PLAINS FEED CO INV 7392",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0083ftjvv1",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-25",
+      "amountCents": -59283,
+      "memo": "VALLEY VET CLINIC",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0145ptfc39",
+      "accountId": "hollis-sav",
+      "postedDate": "2026-08-25",
+      "amountCents": -400000,
+      "memo": "WITHDRAWAL",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0166sntoue",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-26",
+      "amountCents": -900000,
+      "memo": "TRANSFER TO HOLLIS RANCH",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0167p99ko4",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-08-26",
+      "amountCents": -600000,
+      "memo": "TRANSFER TO HOLLIS RANCH",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0050c1olt0",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-27",
+      "amountCents": -365336,
+      "memo": "PAYROLL - RANCH HANDS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0098tk83ag",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-27",
+      "amountCents": -366596,
+      "memo": "PAYROLL - RANCH HANDS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01469sca9r",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-27",
+      "amountCents": 400000,
+      "memo": "DEPOSIT",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01684gfi72",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-27",
+      "amountCents": 1500000,
+      "memo": "TRANSFER FROM CEDAR CREEK CATTLE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0084cd0g3a",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-28",
+      "amountCents": -436609,
+      "memo": "HIGH PLAINS FEED CO INV 4232",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0137xmf4un",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-28",
+      "amountCents": -150000,
+      "memo": "AUTO TRANSFER TO SAV ...7730",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0138ojel48",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-08-28",
+      "amountCents": 150000,
+      "memo": "AUTO TRANSFER FROM CHK ...4821",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0029gy1v7o",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-31",
+      "amountCents": -50486,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0102t9c8fn",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-08-31",
+      "amountCents": 4858,
+      "memo": "INTEREST PAYMENT",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01058d4igr",
+      "accountId": "hollis-sav",
+      "postedDate": "2026-08-31",
+      "amountCents": 2062,
+      "memo": "INTEREST PAYMENT",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00308bim5n",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-01",
+      "amountCents": -47507,
+      "memo": "PRAIRIE PROPANE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00854m4abz",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-01",
+      "amountCents": -50929,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0031kq565r",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-02",
+      "amountCents": -267361,
+      "memo": "HIGH PLAINS FEED CO INV 9800",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0032ymi7xd",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-02",
+      "amountCents": 801788,
+      "memo": "USDA FSA PMT",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0119qlivuy",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-02",
+      "amountCents": -2700000,
+      "memo": "TRANSFER TO HOLLIS RANCH",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0120z8uoqh",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-03",
+      "amountCents": 2700000,
+      "memo": "TRANSFER FROM CEDAR CREEK CATTLE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0157f18zad",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-03",
+      "amountCents": -235000,
+      "memo": "CHECK #1042",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0086v7htj2",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-04",
+      "amountCents": -64602,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00879r5dny",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-04",
+      "amountCents": -265506,
+      "memo": "WESTERN EQUIP CO PARTS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0088sma5f0",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-07",
+      "amountCents": -49750,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0033iftyps",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-08",
+      "amountCents": -73529,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0034kumws0",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-08",
+      "amountCents": -64872,
+      "memo": "VALLEY VET CLINIC",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00893vkggf",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-08",
+      "amountCents": -8366,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0158iib0ze",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-08",
+      "amountCents": 235000,
+      "memo": "MOBILE DEPOSIT",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_003561kbd5",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-09",
+      "amountCents": -470667,
+      "memo": "HIGH PLAINS FEED CO INV 1777",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0121i47lnu",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-09",
+      "amountCents": -900000,
+      "memo": "TRANSFER TO CEDAR CREEK CATTLE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00518y34mw",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-10",
+      "amountCents": -406935,
+      "memo": "PAYROLL - RANCH HANDS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0090klubd9",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-10",
+      "amountCents": -47221,
+      "memo": "VALLEY VET CLINIC",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0099r459bk",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-10",
+      "amountCents": -298363,
+      "memo": "PAYROLL - RANCH HANDS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0122kwtk47",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-09-11",
+      "amountCents": 900000,
+      "memo": "TRANSFER FROM HOLLIS RANCH",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01394r4rvc",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-11",
+      "amountCents": -150000,
+      "memo": "AUTO TRANSFER TO SAV ...7730",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0140aykk29",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-09-11",
+      "amountCents": 150000,
+      "memo": "AUTO TRANSFER FROM CHK ...4821",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_00365m7ftw",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-14",
+      "amountCents": -135344,
+      "memo": "HIGH PLAINS FEED CO INV 2930",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0037ik3ji3",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-14",
+      "amountCents": -31684,
+      "memo": "PRAIRIE PROPANE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01471ugm9z",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-09-14",
+      "amountCents": -750000,
+      "memo": "WITHDRAWAL",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0038i52l1c",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-16",
+      "amountCents": 128516,
+      "memo": "HAY SALE DEPOSIT",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01233nf9ps",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-16",
+      "amountCents": -1200000,
+      "memo": "ONLINE TRANSFER TO SAV ...7730",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_003992zzag",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-17",
+      "amountCents": 374787,
+      "memo": "HAY SALE DEPOSIT",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_012428lru4",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-09-17",
+      "amountCents": 1200000,
+      "memo": "ONLINE TRANSFER FROM CHK ...4821",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0148n2h307",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-17",
+      "amountCents": 750000,
+      "memo": "COUNTER DEPOSIT",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0174knbug5",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-17",
+      "amountCents": -800000,
+      "memo": "ONLINE TRANSFER TO SAV ...3307",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0175zgg17z",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-18",
+      "amountCents": 800000,
+      "memo": "RETURNED TRANSFER ...3307",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0040m1k9ak",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-21",
+      "amountCents": -242894,
+      "memo": "HIGH PLAINS FEED CO INV 9017",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0091h39bba",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-21",
+      "amountCents": -366188,
+      "memo": "HIGH PLAINS FEED CO INV 6947",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0092557u6u",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-21",
+      "amountCents": 838420,
+      "memo": "SALE BARN PROCEEDS LOT 65",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0178rum1zl",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-21",
+      "amountCents": -320000,
+      "memo": "ONLINE TRANSFER TO J HAULING LLC",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0041rt7cdz",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-22",
+      "amountCents": -104792,
+      "memo": "WESTERN EQUIP CO PARTS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0179jh5hr0",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-09-22",
+      "amountCents": 320000,
+      "memo": "HAY SALE DEPOSIT",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0042f8fmft",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-23",
+      "amountCents": -48311,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0052hu0rjz",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-24",
+      "amountCents": -371272,
+      "memo": "PAYROLL - RANCH HANDS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0100njtagf",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-24",
+      "amountCents": -298419,
+      "memo": "PAYROLL - RANCH HANDS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_016923ckjf",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-24",
+      "amountCents": -1100000,
+      "memo": "TRANSFER TO CEDAR CREEK CATTLE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0043wkw4xp",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-25",
+      "amountCents": -53534,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0093mqpszs",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-25",
+      "amountCents": -85646,
+      "memo": "VALLEY VET CLINIC",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0141shxgc0",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-25",
+      "amountCents": -150000,
+      "memo": "AUTO TRANSFER TO SAV ...7730",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0142sju8z0",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-09-25",
+      "amountCents": 150000,
+      "memo": "AUTO TRANSFER FROM CHK ...4821",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0170ev2t3u",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-28",
+      "amountCents": 1100000,
+      "memo": "TRANSFER FROM HOLLIS RANCH",
+      "batch": 2
+    },
+    {
+      "providerTxnId": "ptx_00442fmr75",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-29",
+      "amountCents": -37203,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 2
+    },
+    {
+      "providerTxnId": "ptx_01718cmluf",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-29",
+      "amountCents": -300000,
+      "memo": "ONLINE TRANSFER TO SAV ...7730",
+      "batch": 2
+    },
+    {
+      "providerTxnId": "ptx_0172qafxb7",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-09-29",
+      "amountCents": 300000,
+      "memo": "ONLINE TRANSFER FROM CHK ...4821",
+      "batch": 2
+    },
+    {
+      "providerTxnId": "ptx_0045ls1q0x",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-30",
+      "amountCents": -53988,
+      "memo": "CO-OP FUEL STOP #114",
+      "batch": 2
+    },
+    {
+      "providerTxnId": "ptx_0103mm8mr6",
+      "accountId": "cedar-sav",
+      "postedDate": "2026-09-30",
+      "amountCents": 5342,
+      "memo": "INTEREST PAYMENT",
+      "batch": 2
+    },
+    {
+      "providerTxnId": "ptx_0106nmt4iz",
+      "accountId": "hollis-sav",
+      "postedDate": "2026-09-30",
+      "amountCents": 5332,
+      "memo": "INTEREST PAYMENT",
+      "batch": 2
+    }
+  ]
+}
