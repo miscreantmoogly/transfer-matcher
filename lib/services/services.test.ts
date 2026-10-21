@@ -109,6 +109,21 @@ describe("accepting a proposal", () => {
   });
 });
 
+describe("owner's personal account", () => {
+  it("books a draw as equity on the business, never as an expense", () => {
+    syncAndMatch();
+    const before = booksSummary(db, wes());
+    const draw = listProposals(db, wes(), ["proposed"]).find((p) => p.kind === "owner" && p.totalCents === 350000)!;
+    acceptProposal(db, wes(), draw.id, draw.version);
+    const after = booksSummary(db, wes());
+    const cedar = (s: typeof before) => s.entities.find((e) => e.entityId === "cedar")!;
+    expect(cedar(after).ownerDrawsCents).toBe(350000);
+    expect(cedar(before).expenseNowCents - cedar(after).expenseNowCents).toBe(350000);
+    expect(after.entities.some((e) => e.entityId === "wes")).toBe(false); // personal isn't business books
+    expect(after.unbalancedEntries).toBe(0);
+  });
+});
+
 describe("reject and undo", () => {
   it("a rejected match is never proposed again", () => {
     syncAndMatch();

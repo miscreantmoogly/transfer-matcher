@@ -51,7 +51,7 @@ export function runMatching(db: DB, actor = "system:worker", config?: Partial<Ma
       entityId: string;
       last4: string;
     }[];
-    const entities = db.prepare("SELECT id, name FROM entities").all() as { id: string; name: string }[];
+    const entities = db.prepare("SELECT id, name, kind FROM entities").all() as { id: string; name: string; kind: "business" | "personal" }[];
     const rejected = new Set(
       (db.prepare("SELECT legs_key FROM rejected_matches").all() as { legs_key: string }[]).map((r) => r.legs_key),
     );

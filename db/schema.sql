@@ -17,7 +17,10 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE entities (
   id   TEXT PRIMARY KEY,
-  name TEXT NOT NULL
+  name TEXT NOT NULL,
+  -- 'personal' = the owner's own account, connected so draws and contributions
+  -- can be recognized. Its activity is never part of any business's books.
+  kind TEXT NOT NULL DEFAULT 'business' CHECK (kind IN ('business', 'personal'))
 );
 
 CREATE TABLE users (
@@ -44,7 +47,8 @@ CREATE TABLE ledger_accounts (
   name        TEXT NOT NULL,
   type        TEXT NOT NULL CHECK (type IN ('asset', 'liability', 'equity', 'income', 'expense')),
   -- What role the account plays, so code never has to match on names.
-  kind        TEXT NOT NULL CHECK (kind IN ('cash', 'category', 'transfer_clearing', 'due_from', 'due_to', 'bank_fees')),
+  kind        TEXT NOT NULL CHECK (kind IN ('cash', 'category', 'transfer_clearing', 'due_from', 'due_to', 'bank_fees',
+                                         'owner_draws', 'owner_contributions', 'owner_transfers')),
   -- For due_from / due_to: which sibling entity owes / is owed.
   counterparty_entity_id TEXT REFERENCES entities(id)
 );
@@ -126,7 +130,10 @@ CREATE VIEW unbalanced_entries AS
 CREATE TABLE match_proposals (
   id          INTEGER PRIMARY KEY,
   status      TEXT NOT NULL CHECK (status IN ('proposed', 'applied', 'rejected', 'superseded', 'reversed')),
-  kind        TEXT NOT NULL CHECK (kind IN ('same_entity', 'intercompany')),
+  -- same_entity: between one business's own accounts
+  -- intercompany: between two businesses (a loan: due-to / due-from)
+  -- owner: between a business and the owner's personal account (a draw or contribution)
+  kind        TEXT NOT NULL CHECK (kind IN ('same_entity', 'intercompany', 'owner')),
   source      TEXT NOT NULL CHECK (source IN ('matcher', 'manual')),
   tier        TEXT NOT NULL CHECK (tier IN ('high', 'review')),
   confidence  REAL NOT NULL,

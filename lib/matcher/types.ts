@@ -11,7 +11,7 @@ export type MatchTxn = {
 };
 
 export type AccountInfo = { id: string; entityId: string; last4: string };
-export type EntityInfo = { id: string; name: string };
+export type EntityInfo = { id: string; name: string; kind?: "business" | "personal" };
 
 export type MatcherConfig = {
   /** Max business days a deposit may post AFTER its withdrawal. */
@@ -45,10 +45,13 @@ export const DEFAULT_CONFIG: MatcherConfig = {
 
 export type Tier = "high" | "review";
 
+/** same_entity: one business's own accounts. intercompany: two businesses. owner: a business and the owner's personal account. */
+export type MatchKind = "same_entity" | "intercompany" | "owner";
+
 export type ProposedMatch = {
   outIds: string[];
   inIds: string[];
-  kind: "same_entity" | "intercompany";
+  kind: MatchKind;
   score: number; // 0..1
   tier: Tier;
   reasons: string[];

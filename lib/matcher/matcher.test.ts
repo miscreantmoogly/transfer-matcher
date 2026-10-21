@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { findTransfers, legsKeyOf, type MatchTxn } from "./index";
 import { connectedBlocks, exactAssign, greedyAssign, type Edge } from "./assign";
 import { addBusinessDays, businessDaysBetween } from "../dates";
+import { BANK_ACCOUNTS, ENTITIES } from "../org";
 
 // --- Tiny fixture: two entities, four accounts --------------------------------
 const accounts = [
@@ -169,16 +170,8 @@ describe("invariants on the full synthetic feed", () => {
   const transactions: MatchTxn[] = feed.transactions.map((t: any) => ({
     id: t.providerTxnId, accountId: t.accountId, postedDate: t.postedDate, amountCents: t.amountCents, memo: t.memo,
   }));
-  const realAccounts = [
-    { id: "cedar-chk", entityId: "cedar", last4: "4821" },
-    { id: "cedar-sav", entityId: "cedar", last4: "7730" },
-    { id: "hollis-chk", entityId: "hollis", last4: "1956" },
-    { id: "hollis-sav", entityId: "hollis", last4: "3307" },
-  ];
-  const realEntities = [
-    { id: "cedar", name: "Cedar Creek Cattle Co." },
-    { id: "hollis", name: "Hollis Ranch LLC" },
-  ];
+  const realAccounts = BANK_ACCOUNTS.map((a) => ({ id: a.id, entityId: a.entityId, last4: a.last4 }));
+  const realEntities = ENTITIES.map((e) => ({ id: e.id, name: e.name, kind: e.kind }));
   const result = findTransfers({ transactions, accounts: realAccounts, entities: realEntities });
 
   it("never uses a transaction in two proposals", () => {
@@ -195,6 +188,32 @@ describe("invariants on the full synthetic feed", () => {
     const shuffled = [...transactions].reverse();
     const again = findTransfers({ transactions: shuffled, accounts: realAccounts, entities: realEntities });
     expect(again.proposals).toEqual(result.proposals);
+  });
+
+  const truthFile = JSON.parse(readFileSync(join(__dirname, "../../data/ground_truth.json"), "utf8"));
+  const proposedKeys = new Set(result.proposals.map((p) => p.legsKey));
+  const proposedTxns = new Set(result.proposals.flatMap((p) => [...p.outIds, ...p.inIds]));
+
+  it("untangles a same-day, same-amount chain through three businesses", () => {
+    const chain = truthFile.groups.filter((g: any) => g.label.startsWith("Chain"));
+    expect(chain).toHaveLength(2);
+    for (const g of chain) expect(proposedKeys.has(legsKeyOf([...g.outs, ...g.ins]))).toBe(true);
+  });
+
+  it("recognizes owner's draws and contributions as their own kind", () => {
+    const ownerGroups = truthFile.groups.filter((g: any) => g.kind === "owner");
+    expect(ownerGroups.length).toBeGreaterThan(0);
+    for (const g of ownerGroups) {
+      const p = result.proposals.find((x) => x.legsKey === legsKeyOf([...g.outs, ...g.ins]));
+      expect(p?.kind).toBe("owner");
+    }
+  });
+
+  it("leaves real business between the family's entities alone (rent, a hay sale)", () => {
+    for (const id of ["X7", "X8", "X9"]) {
+      const trap = truthFile.traps.find((t: any) => t.id === id);
+      expect(trap.txns.some((t: string) => proposedTxns.has(t))).toBe(false);
+    }
   });
 
   it("keeps high-tier precision at 100% on the labelled feed (regression guard)", () => {

@@ -10,7 +10,7 @@
 
 import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
-import { BANK_ACCOUNTS, ENTITIES } from "../lib/org";
+import { BANK_ACCOUNTS, ENTITIES, entityKind } from "../lib/org";
 import { addBusinessDays, businessDaysInRange, isWeekend, parseDate } from "../lib/dates";
 
 export type FeedTransaction = {
@@ -24,7 +24,7 @@ export type FeedTransaction = {
 
 export type TruthGroup = {
   id: string;
-  kind: "same_entity" | "intercompany";
+  kind: "same_entity" | "intercompany" | "owner";
   difficulty: "easy" | "medium" | "hard";
   label: string;
   outs: string[]; // providerTxnIds
@@ -134,6 +134,16 @@ for (const accountId of ["cedar-sav", "hollis-sav"]) {
     add(accountId, monthEnd, randCents(8, 60), "INTEREST PAYMENT");
   }
 }
+// Hollis Land Co.: few transactions of its own.
+add("land-chk", "2026-07-15", -randCents(4200, 4800), "COUNTY TREASURER PROPERTY TAX");
+add("land-chk", "2026-09-15", -randCents(900, 1400), "FARM BUREAU INSURANCE");
+add("land-chk", "2026-08-12", -randCents(300, 900), "WESTERN EQUIP CO REPAIR FENCE");
+// Wes's personal checking: ordinary household life.
+for (const day of days) {
+  if (rand() < 0.18) add("wes-chk", day, -randCents(40, 260), "GROCERY OUTLET");
+  if (rand() < 0.05) add("wes-chk", day, -randCents(60, 400), "COSTCO WHOLESALE");
+}
+for (const d of ["2026-07-20", "2026-08-20", "2026-09-21"]) add("wes-chk", d, -randCents(90, 140), "VERIZON WIRELESS");
 
 // ---------------------------------------------------------------------------
 // 2. Real transfers (ground truth)
@@ -141,7 +151,11 @@ for (const accountId of ["cedar-sav", "hollis-sav"]) {
 const groups: TruthGroup[] = [];
 const traps: Trap[] = [];
 const kindOf = (from: string, to: string) =>
-  acct(from).entityId === acct(to).entityId ? ("same_entity" as const) : ("intercompany" as const);
+  entityKind(acct(from).entityId) === "personal" || entityKind(acct(to).entityId) === "personal"
+    ? ("owner" as const)
+    : acct(from).entityId === acct(to).entityId
+      ? ("same_entity" as const)
+      : ("intercompany" as const);
 
 /** A simple 1-to-1 transfer. `lag` = business days between withdrawal and deposit (can be negative). */
 function transfer(opts: {
@@ -250,6 +264,34 @@ for (const [outDate, label] of [["2026-08-17", "Identical same-week transfer #1 
   });
 }
 
+// Owner's draws: Wes pays himself from Cedar every month. Not an expense:
+// it's equity leaving the business.
+for (const date of ["2026-07-06", "2026-08-03", "2026-09-01"]) {
+  transfer({
+    from: "cedar-chk", to: "wes-chk", dollars: 3500, outDate: date, lag: 0, difficulty: "easy",
+    outMemo: memo.onlineTo("wes-chk"), inMemo: memo.onlineFrom("cedar-chk"),
+    label: "Owner's draw: Cedar to Wes's personal checking",
+  });
+}
+// Owner contribution: Wes puts his own money into his father's ranch.
+transfer({
+  from: "wes-chk", to: "hollis-chk", dollars: 7000, outDate: "2026-08-10", lag: 1, difficulty: "medium",
+  outMemo: "MOBILE XFER TO HOLLIS RANCH", inMemo: "TRANSFER FROM WES HOLLIS",
+  label: "Owner contribution: Wes's personal money into Hollis Ranch",
+});
+// A chain through three businesses on the same day, same amount. Cedar's
+// withdrawal could pair with either $20,000 deposit; only the names tell them apart.
+transfer({
+  from: "cedar-chk", to: "hollis-chk", dollars: 20000, outDate: "2026-09-15", lag: 1, difficulty: "hard",
+  outMemo: memo.entityTo("hollis-chk"), inMemo: memo.entityFrom("cedar-chk"),
+  label: "Chain, leg 1: Cedar to Hollis Ranch",
+});
+transfer({
+  from: "hollis-chk", to: "land-chk", dollars: 20000, outDate: "2026-09-15", lag: 1, difficulty: "hard",
+  outMemo: memo.entityTo("land-chk"), inMemo: memo.entityFrom("hollis-chk"),
+  label: "Chain, leg 2: Hollis Ranch passes the same $20,000 on to Hollis Land",
+});
+
 // One withdrawal, two deposits (split across two of Hollis's accounts).
 {
   const out = add("cedar-chk", "2026-07-16", -5_000_000, memo.entityTo("hollis-chk"));
@@ -277,7 +319,7 @@ easy("cedar-chk", "cedar-sav", 3000, "2026-09-29", 0, "Transfer entirely within 
 // 3. Traps: things that look like transfers but are not
 // ---------------------------------------------------------------------------
 traps.push({
-  id: "X1", label: "Transfer to an account Ambrook can't see (no counterpart exists)",
+  id: "X1", label: "Transfer to an account that isn't connected (no counterpart exists)",
   txns: [add("cedar-chk", "2026-08-20", -1_000_000, "ONLINE TRANSFER TO CHK ...9912")],
 });
 traps.push({
@@ -303,6 +345,29 @@ traps.push({
   txns: [
     add("hollis-chk", "2026-09-10", -450_000, "ONLINE TRANSFER TO R MILLER"),
     add("cedar-chk", "2026-09-11", 450_000, "DEPOSIT"),
+  ],
+});
+// Real business between the family's own entities. Money moves between
+// related companies, but it IS income and expense on each company's books.
+traps.push({
+  id: "X7", label: "Monthly pasture rent Cedar pays Hollis Land (real rental income, not a transfer)",
+  txns: ["2026-07-01", "2026-08-03", "2026-09-01"].flatMap((d) => [
+    add("cedar-chk", d, -300_000, "PASTURE LEASE - HOLLIS LAND CO"),
+    add("land-chk", addBusinessDays(d, 1), 300_000, "LEASE PMT CEDAR CREEK CATTLE"),
+  ]),
+});
+traps.push({
+  id: "X8", label: "Monthly pasture rent Hollis Ranch pays Hollis Land",
+  txns: ["2026-07-01", "2026-08-03", "2026-09-01"].flatMap((d) => [
+    add("hollis-chk", d, -220_000, "PASTURE LEASE - HOLLIS LAND CO"),
+    add("land-chk", addBusinessDays(d, 1), 220_000, "LEASE PMT HOLLIS RANCH"),
+  ]),
+});
+traps.push({
+  id: "X9", label: "Hollis Ranch sells hay to Cedar (a real sale between the two businesses)",
+  txns: [
+    add("cedar-chk", "2026-08-19", -280_000, "HAY PURCHASE - HOLLIS RANCH"),
+    add("hollis-chk", "2026-08-20", 280_000, "HAY SALE - CEDAR CREEK CATTLE"),
   ],
 });
 traps.push({

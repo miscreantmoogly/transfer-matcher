@@ -1,18 +1,18 @@
 # Transfer matcher evaluation
 
-181 bank transactions, 32 true transfers, 6 traps.
+231 bank transactions, 38 true transfers, 9 traps.
 
 ## Default config
 
 | Tier | Proposed | Correct | Precision |
 |---|---|---|---|
-| high (bulk-accept) | 22 | 22 | 100% |
+| high (bulk-accept) | 28 | 28 | 100% |
 | review | 10 | 9 | 90% |
 
 - **Recall (any tier):** 97% of true transfers proposed
-- **Auto recall (high tier only):** 69% handled with one click
+- **Auto recall (high tier only):** 74% handled with one click
 - **Overall precision:** 97%
-- Candidate pairs scored: 36; blocks: 29 (29 exact, 0 greedy); splits: 2
+- Candidate pairs scored: 50; blocks: 34 (34 exact, 0 greedy); splits: 2
 
 ### Missed transfers
 
@@ -26,35 +26,35 @@
 
 | Difficulty | Found / total |
 |---|---|
-| easy | 19 / 19 |
-| medium | 5 / 5 |
-| hard | 7 / 8 |
+| easy | 22 / 22 |
+| medium | 6 / 6 |
+| hard | 9 / 10 |
 
 ## Sweep: date window (business days)
 
 | Window | Recall | Auto recall | Precision | High-tier precision | Candidate pairs |
 |---|---|---|---|---|---|
-| 1 | 69% | 56% | 92% | 100% | 25 |
-| 2 | 88% | 66% | 97% | 100% | 31 |
-| 3 | 91% | 66% | 97% | 100% | 33 |
-| 4 | 94% | 69% | 97% | 100% | 35 |
-| 5 | 97% | 69% | 97% | 100% | 36 |
-| 6 | 97% | 69% | 97% | 100% | 36 |
-| 7 | 97% | 69% | 97% | 100% | 36 |
+| 1 | 74% | 63% | 93% | 100% | 39 |
+| 2 | 89% | 71% | 97% | 100% | 45 |
+| 3 | 92% | 71% | 97% | 100% | 47 |
+| 4 | 95% | 74% | 97% | 100% | 49 |
+| 5 | 97% | 74% | 97% | 100% | 50 |
+| 6 | 97% | 74% | 97% | 100% | 50 |
+| 7 | 97% | 74% | 97% | 100% | 51 |
 
 ## Sweep: "high" threshold
 
 | High threshold | Auto recall | High-tier precision |
 |---|---|---|
-| 0.55 | 75% | 96% |
-| 0.65 | 69% | 96% |
-| 0.75 | 69% | 100% |
-| 0.85 | 66% | 100% |
-| 0.95 | 66% | 100% |
+| 0.55 | 79% | 97% |
+| 0.65 | 74% | 97% |
+| 0.75 | 74% | 100% |
+| 0.85 | 71% | 100% |
+| 0.95 | 71% | 100% |
 
 ## Exact vs greedy assignment
 
 | Assignment | Recall | Precision | Missed |
 |---|---|---|---|
 | exact | 97% | 97% | T26 |
-| greedy | 91% | 94% | T26, T27, T28 |
+| greedy | 92% | 95% | T26, T27, T28 |

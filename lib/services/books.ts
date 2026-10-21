@@ -18,6 +18,10 @@ export type EntityBooks = {
   expenseBeforeCents: number;
   expenseNowCents: number;
   transfersInTransitCents: number;
+  /** Money the owner took out of the business (equity, not an expense). */
+  ownerDrawsCents: number;
+  /** Money the owner put in (equity, not income). */
+  ownerContributionsCents: number;
   dueFrom: { otherEntityName: string; cents: number }[];
   dueTo: { otherEntityName: string; cents: number }[];
 };
@@ -44,7 +48,12 @@ export function booksSummary(db: DB, user: CurrentUser): BooksSummary {
     ).cents;
 
   const entities = db
-    .prepare(`SELECT id, name FROM entities WHERE id IN (${user.entityIds.map(() => "?").join(",")}) ORDER BY name`)
+    // Business books only: the owner's personal account is connected so draws
+    // can be recognized, but its activity is never part of a business's books.
+    .prepare(
+      `SELECT id, name FROM entities
+        WHERE kind = 'business' AND id IN (${user.entityIds.map(() => "?").join(",")}) ORDER BY name`,
+    )
     .all(...user.entityIds) as { id: string; name: string }[];
 
   const books: EntityBooks[] = entities.map((e) => {
@@ -69,6 +78,8 @@ export function booksSummary(db: DB, user: CurrentUser): BooksSummary {
       expenseBeforeCents: 0 - sumFor(e.id, "la.type = 'expense' AND je.source = 'bank_import'"),
       expenseNowCents: 0 - sumFor(e.id, "la.type = 'expense'"),
       transfersInTransitCents: 0 - sumFor(e.id, "la.kind = 'transfer_clearing'"),
+      ownerDrawsCents: 0 - sumFor(e.id, "la.kind = 'owner_draws'"),
+      ownerContributionsCents: sumFor(e.id, "la.kind = 'owner_contributions'"),
       dueFrom: balances("due_from"),
       // Liabilities have credit balances; flip the sign so "owes $X" reads positive.
       dueTo: balances("due_to").map((d) => ({ ...d, cents: 0 - d.cents })),
@@ -76,7 +87,7 @@ export function booksSummary(db: DB, user: CurrentUser): BooksSummary {
   });
 
   const seesEverything =
-    (db.prepare("SELECT count(*) AS n FROM entities").get() as { n: number }).n === user.entityIds.length;
+    (db.prepare("SELECT count(*) AS n FROM entities WHERE kind = 'business'").get() as { n: number }).n === entities.length;
   const intercompanyNetCents = seesEverything
     ? books.reduce(
         (s, b) => s + b.dueFrom.reduce((x, d) => x + d.cents, 0) - b.dueTo.reduce((x, d) => x + d.cents, 0),
@@ -98,6 +109,7 @@ export type UnmatchedTxn = {
   last4: string;
   entityId: string;
   entityName: string;
+  entityKind: "business" | "personal";
   postedDate: string;
   amountCents: number;
   memo: string;
@@ -112,7 +124,7 @@ export function unmatchedTransactions(db: DB, user: CurrentUser): UnmatchedTxn[]
   const rows = db
     .prepare(
       `SELECT t.id, t.account_id AS accountId, ba.name AS accountName, ba.last4, ba.entity_id AS entityId,
-              e.name AS entityName, t.posted_date AS postedDate, t.amount_cents AS amountCents, t.memo,
+              e.name AS entityName, e.kind AS entityKind, t.posted_date AS postedDate, t.amount_cents AS amountCents, t.memo,
               (SELECT la.name FROM journal_entries je
                  JOIN journal_lines jl ON jl.entry_id = je.id
                  JOIN ledger_accounts la ON la.id = jl.ledger_account_id

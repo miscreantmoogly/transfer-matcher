@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
+  KIND_LABEL,
   arrivalLabel,
   gapLabel,
   linkingTokens,
@@ -17,8 +18,9 @@ import {
   type ProposalView,
   type UnmatchedTxn,
 } from "./lib";
+import type { CaseLeg, Diagnostics } from "@/lib/diagnostics";
 
-export type View = "review" | "unmatched" | "books" | "history";
+export type View = "review" | "unmatched" | "history" | "books" | "diagnostics";
 
 // ---------------------------------------------------------------------------
 // Icons (16px, stroke-based)
@@ -29,16 +31,46 @@ const Icon = ({ d }: { d: string }) => (
     <path d={d} />
   </svg>
 );
-const ICONS: Record<View, string> = {
-  review: "M2 4.5h4l1 2h2l1-2h4M2 4.5v7h12v-7M4 2h8",
-  unmatched: "M2.5 4h11M2.5 8h11M2.5 12h7",
-  books: "M3 2.5h8.5v11H3zM5.5 5.5h3.5M5.5 8h3.5M13 4.5v9",
-  history: "M8 4.5V8l2.5 1.5M2.5 8a5.5 5.5 0 1 0 1.6-3.9M2.5 2.5v2.5H5",
+const ICON = {
+  home: "M2.5 7.5 8 3l5.5 4.5M4 6.5V13h8V6.5",
+  ledger: "M2.5 4h11M2.5 8h11M2.5 12h7",
+  transfers: "M3 5.5h9.5L10 3M13 10.5H3.5L6 13",
+  bills: "M4 2.5h8v11l-2-1.2-2 1.2-2-1.2-2 1.2zM6 6h4M6 8.5h4",
+  invoices: "M3.5 2.5h6l3 3v8h-9zM9.5 2.5v3h3",
+  wallet: "M2.5 5h11v8h-11zM2.5 5l8-2.5V5M10.5 9h1",
+  reports: "M3 13V8M6.5 13V4M10 13V7M13.5 13V2.5",
+  internal: "M8 2.5l5 2v4c0 2.8-2.2 4.6-5 5-2.8-.4-5-2.2-5-5v-4z",
 };
 
 // ---------------------------------------------------------------------------
-// Sidebar
+// Sidebar: the transfer matcher is one tool inside a larger bookkeeping app.
+// Other sections are shown (disabled) so it reads in context.
 // ---------------------------------------------------------------------------
+
+function NavItem(props: { icon: string; label: string; disabled?: boolean; active?: boolean; count?: number | null; onClick?: () => void }) {
+  return (
+    <button
+      className={`nav-item ${props.disabled ? "is-disabled" : ""}`}
+      aria-current={props.active ? "page" : undefined}
+      aria-disabled={props.disabled || undefined}
+      title={props.disabled ? "Not part of this demo" : undefined}
+      onClick={props.disabled ? undefined : props.onClick}
+    >
+      <Icon d={props.icon} />
+      <span>{props.label}</span>
+      {props.count ? <span className="n">{props.count}</span> : null}
+    </button>
+  );
+}
+
+function SubItem(props: { label: string; active: boolean; count?: number | null; onClick: () => void }) {
+  return (
+    <button className="nav-sub" aria-current={props.active ? "page" : undefined} onClick={props.onClick}>
+      <span>{props.label}</span>
+      {props.count ? <span className="n">{props.count}</span> : null}
+    </button>
+  );
+}
 
 export function Sidebar(props: {
   state: AppState;
@@ -48,35 +80,80 @@ export function Sidebar(props: {
   onUser: (id: string) => void;
   onReset: () => void;
 }) {
-  const { state } = props;
-  const items: [View, string, number | null][] = [
-    ["review", "Review", state.proposals.length || null],
-    ["unmatched", "Unmatched", state.counts.bankTransactions ? state.unmatched.length : null],
-    ["books", "Books", null],
-    ["history", "History", null],
-  ];
+  const { state, view } = props;
+  const user = state.users.find((u) => u.id === props.userId);
+  const initials = (name: string) =>
+    name
+      .split(" ")
+      .map((w) => w[0])
+      .slice(0, 2)
+      .join("");
+  const entities = state.entities;
   return (
     <aside className="sidebar">
-      <div className="org">
-        <div className="app">Transfer Matcher</div>
-        <div className="names">{state.books.entities.map((e) => e.entityName).join(", ")}</div>
-      </div>
+      <details className="org">
+        <summary>
+          <span className="org-mark">HF</span>
+          <span className="org-text">
+            <span className="app">Hollis Family</span>
+            <span className="names">
+              {entities.length} {entities.length === 1 ? "entity" : "entities"}
+            </span>
+          </span>
+          <svg viewBox="0 0 16 16" className="chev" aria-hidden="true">
+            <path d="M4 6l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.5" />
+          </svg>
+        </summary>
+        <ul>
+          {entities.map((e) => (
+            <li key={e.id}>
+              {e.name}
+              {e.kind === "personal" && <span> (personal)</span>}
+            </li>
+          ))}
+        </ul>
+      </details>
+
       <nav className="nav" aria-label="Main">
-        {items.map(([id, label, n]) => (
-          <button key={id} aria-current={props.view === id ? "page" : undefined} onClick={() => props.onView(id)}>
-            <Icon d={ICONS[id]} />
-            {label}
-            {n !== null && <span className="n">{n}</span>}
-          </button>
-        ))}
+        <NavItem icon={ICON.home} label="Home" disabled />
+        <NavItem icon={ICON.ledger} label="Ledger" disabled />
+        <NavItem icon={ICON.transfers} label="Transfers" active={["review", "unmatched", "history"].includes(view)} onClick={() => props.onView("review")} />
+        <div className="nav-group">
+          <SubItem label="Review" active={view === "review"} count={state.proposals.length} onClick={() => props.onView("review")} />
+          <SubItem
+            label="Unmatched"
+            active={view === "unmatched"}
+            count={state.counts.bankTransactions ? state.unmatched.filter((t) => t.entityKind === "business" && t.category.startsWith("Uncategorized")).length : null}
+            onClick={() => props.onView("unmatched")}
+          />
+          <SubItem label="History" active={view === "history"} onClick={() => props.onView("history")} />
+        </div>
+        <NavItem icon={ICON.bills} label="Bills" disabled />
+        <NavItem icon={ICON.invoices} label="Invoices" disabled />
+        <NavItem icon={ICON.wallet} label="Wallet" disabled />
+        <NavItem icon={ICON.reports} label="Reports" active={view === "books"} onClick={() => props.onView("books")} />
+        <div className="nav-group">
+          <SubItem label="Transfer impact" active={view === "books"} onClick={() => props.onView("books")} />
+        </div>
+
+        <div className="nav-heading">Internal</div>
+        <NavItem icon={ICON.internal} label="Matcher diagnostics" active={view === "diagnostics"} onClick={() => props.onView("diagnostics")} />
       </nav>
+
       <div className="bottom">
+        <div className="user">
+          <span className="avatar">{user ? initials(user.name) : "?"}</span>
+          <span className="who">
+            <span className="name">{user?.name}</span>
+            <span className="role">{user?.role}</span>
+          </span>
+        </div>
         <label>
-          Signed in as
+          View as (demo)
           <select value={props.userId} onChange={(e) => props.onUser(e.target.value)}>
             {state.users.map((u) => (
               <option key={u.id} value={u.id}>
-                {u.name}
+                {u.name}, {u.role}
               </option>
             ))}
           </select>
@@ -95,13 +172,12 @@ export function Sidebar(props: {
 
 export function Summary({ books }: { books: BooksSummary }) {
   const removed = books.entities.reduce((s, e) => s + e.incomeBeforeCents - e.incomeNowCents, 0);
-  const owed = books.entities
-    .map((e) => ({
-      e,
-      net: e.dueFrom.reduce((s, d) => s + d.cents, 0) - e.dueTo.reduce((s, d) => s + d.cents, 0),
-      other: e.dueFrom[0]?.otherEntityName ?? e.dueTo[0]?.otherEntityName,
-    }))
-    .find((x) => x.net !== 0);
+  // Total outstanding between businesses: each entity's net receivable, positives only.
+  const owedBetween = books.entities.reduce((s, e) => {
+    const net = e.dueFrom.reduce((x, d) => x + d.cents, 0) - e.dueTo.reduce((x, d) => x + d.cents, 0);
+    return s + Math.max(0, net);
+  }, 0);
+  const draws = books.entities.reduce((s, e) => s + e.ownerDrawsCents - e.ownerContributionsCents, 0);
   const healthy =
     books.unbalancedEntries === 0 &&
     (books.intercompanyNetCents ?? 0) === 0 &&
@@ -109,18 +185,16 @@ export function Summary({ books }: { books: BooksSummary }) {
   return (
     <div className="summary">
       <div>
-        <div className="k">Transfers taken out of income</div>
+        <div className="k">Taken out of income</div>
         <div className="v">{moneyWhole(removed)}</div>
       </div>
       <div>
-        <div className="k">
-          {owed
-            ? owed.net > 0
-              ? `${owed.other} owes ${owed.e.entityName}`
-              : `${owed.e.entityName} owes ${owed.other}`
-            : "Owed between your businesses"}
-        </div>
-        <div className="v">{moneyWhole(owed ? Math.abs(owed.net) : 0)}</div>
+        <div className="k">Owed between your businesses</div>
+        <div className="v">{moneyWhole(owedBetween)}</div>
+      </div>
+      <div>
+        <div className="k">{draws >= 0 ? "Net owner's draws" : "Net owner contributions"}</div>
+        <div className="v">{moneyWhole(Math.abs(draws))}</div>
       </div>
       <div>
         <div className="k">Books check</div>
@@ -356,7 +430,7 @@ export function Drawer(props: {
           <div className="meta">
             {open && <span className={`pill ${p.tier === "high" ? "strong" : "review"}`}>{p.tier === "high" ? "Strong match" : "Check this one"}</span>}
             {!open && <span className={`pill ${p.status}`}>{OUTCOME[p.status] ?? p.status}</span>}
-            <span className="pill">{p.kind === "intercompany" ? "Between your businesses" : "Between your accounts"}</span>
+            <span className="pill">{KIND_LABEL[p.kind]}</span>
             {p.source === "matcher" && <span className="pill">Score {p.confidence.toFixed(2)}</span>}
           </div>
         </div>
@@ -524,41 +598,59 @@ export function UnmatchedTable(props: {
 export function BooksView({ books }: { books: BooksSummary }) {
   return (
     <div className="books">
-      {books.entities.map((e) => (
-        <section className="book" key={e.entityId}>
-          <h2>{e.entityName}</h2>
-          <div className="line">
-            <span className="l">Income</span>
-            <span className="r">
-              {e.incomeBeforeCents !== e.incomeNowCents && <span className="was">{moneyWhole(e.incomeBeforeCents)}</span>}
-              {moneyWhole(e.incomeNowCents)}
-            </span>
-          </div>
-          <div className="line">
-            <span className="l">Expenses</span>
-            <span className="r">
-              {e.expenseBeforeCents !== e.expenseNowCents && <span className="was">{moneyWhole(e.expenseBeforeCents)}</span>}
-              {moneyWhole(e.expenseNowCents)}
-            </span>
-          </div>
-          {e.dueFrom.map((d) => (
-            <div className="line" key={`f-${d.otherEntityName}`}>
-              <span className="l">Owed by {d.otherEntityName}</span>
-              <span className="r">{moneyWhole(d.cents)}</span>
+      {books.entities.map((e) => {
+        const owedBy = e.dueFrom.filter((d) => d.cents !== 0);
+        const owedTo = e.dueTo.filter((d) => d.cents !== 0);
+        return (
+          <section className="book" key={e.entityId}>
+            <h2>{e.entityName}</h2>
+            <div className="line">
+              <span className="l">Income</span>
+              <span className="r">
+                {e.incomeBeforeCents !== e.incomeNowCents && <span className="was">{moneyWhole(e.incomeBeforeCents)}</span>}
+                {moneyWhole(e.incomeNowCents)}
+              </span>
             </div>
-          ))}
-          {e.dueTo.map((d) => (
-            <div className="line" key={`t-${d.otherEntityName}`}>
-              <span className="l">Owed to {d.otherEntityName}</span>
-              <span className="r">{moneyWhole(d.cents)}</span>
+            <div className="line">
+              <span className="l">Expenses</span>
+              <span className="r">
+                {e.expenseBeforeCents !== e.expenseNowCents && <span className="was">{moneyWhole(e.expenseBeforeCents)}</span>}
+                {moneyWhole(e.expenseNowCents)}
+              </span>
             </div>
-          ))}
-          <div className="line">
-            <span className="l">Transfers in transit</span>
-            <span className="r">{moneyWhole(e.transfersInTransitCents)}</span>
-          </div>
-        </section>
-      ))}
+            {owedBy.map((d) => (
+              <div className="line" key={`f-${d.otherEntityName}`}>
+                <span className="l">Owed by {d.otherEntityName}</span>
+                <span className="r">{moneyWhole(d.cents)}</span>
+              </div>
+            ))}
+            {owedTo.map((d) => (
+              <div className="line" key={`t-${d.otherEntityName}`}>
+                <span className="l">Owed to {d.otherEntityName}</span>
+                <span className="r">{moneyWhole(d.cents)}</span>
+              </div>
+            ))}
+            {e.ownerDrawsCents !== 0 && (
+              <div className="line">
+                <span className="l">Owner&apos;s draws</span>
+                <span className="r">{moneyWhole(e.ownerDrawsCents)}</span>
+              </div>
+            )}
+            {e.ownerContributionsCents !== 0 && (
+              <div className="line">
+                <span className="l">Owner contributions</span>
+                <span className="r">{moneyWhole(e.ownerContributionsCents)}</span>
+              </div>
+            )}
+            {owedBy.length + owedTo.length === 0 && e.ownerDrawsCents === 0 && e.ownerContributionsCents === 0 && (
+              <div className="line">
+                <span className="l">Nothing owed between businesses yet</span>
+                <span className="r" />
+              </div>
+            )}
+          </section>
+        );
+      })}
       <section className="book">
         <h2>Checks</h2>
         <div className="line">
@@ -578,6 +670,10 @@ export function BooksView({ books }: { books: BooksSummary }) {
           <span className={`r ${books.entities.every((e) => e.transfersInTransitCents === 0) ? "ok" : "bad"}`}>
             {books.entities.every((e) => e.transfersInTransitCents === 0) ? "✓" : "✗"}
           </span>
+        </div>
+        <div className="line">
+          <span className="l">Owner&apos;s draws kept off the P&amp;L</span>
+          <span className="r ok">✓</span>
         </div>
       </section>
     </div>
@@ -743,5 +839,209 @@ export function PairedView(props: {
         );
       })}
     </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Matcher diagnostics: every scripted case, graded against the answer key.
+// Internal tool, read-only.
+// ---------------------------------------------------------------------------
+
+const DIFFICULTY_ORDER = { easy: 0, medium: 1, hard: 2 } as const;
+
+function CaseLegs({ legs }: { legs: CaseLeg[] }) {
+  return (
+    <div className="case-legs">
+      {legs.map((l, i) => (
+        <div key={i} className="case-leg">
+          <span className={`amt ${l.amountCents > 0 ? "in" : ""}`}>
+            {l.amountCents > 0 ? "+" : "−"}
+            {money(Math.abs(l.amountCents))}
+          </span>
+          <span className="acct">
+            {l.accountName} ...{l.last4}, {shortDate(l.postedDate)}
+          </span>
+          <span className="memo">{l.memo}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const OUTCOME_PILL: Record<string, [string, string]> = {
+  strong: ["strong", "✓ Found, strong"],
+  check: ["review", "✓ Found, check"],
+  missed: ["rejected", "✗ Missed"],
+  wrong: ["rejected", "✗ Wrong pairing"],
+  ignored: ["strong", "✓ Ignored"],
+  proposed: ["rejected", "✗ Proposed"],
+};
+
+export function DiagnosticsView({ data }: { data: Diagnostics | null }) {
+  const [showOrdinary, setShowOrdinary] = useState(false);
+  const [edgeOnly, setEdgeOnly] = useState(true);
+  if (!data) return <div className="empty"><p>Running the matcher…</p></div>;
+  const t = data.totals;
+  const pct = (a: number, b: number) => (b === 0 ? "n/a" : `${Math.round((a / b) * 100)}%`);
+  const sorted = [...data.transfers].sort((a, b) => DIFFICULTY_ORDER[a.difficulty] - DIFFICULTY_ORDER[b.difficulty]);
+  // Edge cases = anything not "easy", plus anything the matcher didn't nail.
+  const transfers = edgeOnly ? sorted.filter((c) => c.difficulty !== "easy" || c.outcome !== "strong") : sorted;
+  const traps = [...data.traps].sort((a, b) => a.id.localeCompare(b.id, undefined, { numeric: true }));
+  return (
+    <>
+      <p className="lede">
+        Runs the matcher over the full synthetic bank feed ({t.transactions} transactions, both syncs) and grades it
+        against the answer key. Read-only; it never touches the books. I wrote these scenarios and the scoring weights,
+        so treat this as a regression check, not proof of real-world accuracy.
+      </p>
+      <div className="summary">
+        <div>
+          <div className="k">Real transfers found</div>
+          <div className="v">
+            {t.transfersFound} / {t.transfers}
+          </div>
+        </div>
+        <div>
+          <div className="k">Look-alikes ignored</div>
+          <div className="v">
+            {t.trapsIgnored} / {t.traps}
+          </div>
+        </div>
+        <div>
+          <div className="k">Ordinary activity left alone</div>
+          <div className="v">
+            {t.ordinaryLeftAlone} / {t.ordinary}
+          </div>
+        </div>
+        <div>
+          <div className="k">Precision: strong / check</div>
+          <div className="v">
+            {pct(t.strongCorrect, t.strongProposed)} / {pct(t.checkCorrect, t.checkProposed)}
+          </div>
+        </div>
+      </div>
+
+      <div className="toolbar" style={{ marginTop: 24 }}>
+        <h2 className="section-title" style={{ margin: 0 }}>
+          Real transfers
+        </h2>
+        <div className="segmented" role="group" aria-label="Which cases">
+          <button aria-pressed={edgeOnly} onClick={() => setEdgeOnly(true)}>
+            Edge cases {sorted.filter((c) => c.difficulty !== "easy" || c.outcome !== "strong").length}
+          </button>
+          <button aria-pressed={!edgeOnly} onClick={() => setEdgeOnly(false)}>
+            All {sorted.length}
+          </button>
+        </div>
+      </div>
+      <div className="table-wrap">
+        <table className="ledger cases">
+          <thead>
+            <tr>
+              <th>Case</th>
+              <th>Bank lines</th>
+              <th>Type</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            {transfers.map((c) => (
+              <tr key={c.id}>
+                <td className="case-name">
+                  {c.label}
+                  <span className="sub">
+                    {c.id}, {c.difficulty}
+                  </span>
+                </td>
+                <td>
+                  <CaseLegs legs={c.legs} />
+                </td>
+                <td>
+                  <span className="pill">{KIND_LABEL[c.kind]}</span>
+                </td>
+                <td>
+                  <span className={`pill ${OUTCOME_PILL[c.outcome][0]}`}>{OUTCOME_PILL[c.outcome][1]}</span>
+                  {c.score !== null && <span className="sub">Score {c.score.toFixed(2)}</span>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2 className="section-title">Look-alikes that are not transfers ({traps.length})</h2>
+      <div className="table-wrap">
+        <table className="ledger cases">
+          <thead>
+            <tr>
+              <th>Case</th>
+              <th>Bank lines</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody>
+            {traps.map((c) => (
+              <tr key={c.id}>
+                <td className="case-name">
+                  {c.label}
+                  <span className="sub">{c.id}</span>
+                </td>
+                <td>
+                  <CaseLegs legs={c.legs} />
+                </td>
+                <td>
+                  <span className={`pill ${OUTCOME_PILL[c.outcome][0]}`}>
+                    {c.outcome === "proposed" ? `✗ Proposed as ${c.tier === "high" ? "strong" : "check"}` : OUTCOME_PILL.ignored[1]}
+                  </span>
+                  {c.score !== null && <span className="sub">Score {c.score.toFixed(2)}</span>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <h2 className="section-title">Ordinary activity ({data.ordinary.length})</h2>
+      <p className="lede">
+        Feed bills, fuel, vet visits, cattle and hay sales, payroll, groceries on the personal account. None of it should be
+        proposed. {t.ordinaryLeftAlone} of {t.ordinary} were left alone.
+      </p>
+      <button className="btn" onClick={() => setShowOrdinary(!showOrdinary)}>
+        {showOrdinary ? "Hide" : "Show"} all {data.ordinary.length}
+      </button>
+      {showOrdinary && (
+        <div className="table-wrap" style={{ marginTop: 10 }}>
+          <table className="ledger">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Account</th>
+                <th>Description</th>
+                <th className="num">Amount</th>
+                <th>Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.ordinary.map((o, i) => (
+                <tr key={i}>
+                  <td className="date">{shortDate(o.postedDate)}</td>
+                  <td>
+                    {o.accountName} ...{o.last4}
+                  </td>
+                  <td>{o.memo}</td>
+                  <td className="num">
+                    {o.amountCents > 0 ? "+" : "−"}
+                    {money(Math.abs(o.amountCents))}
+                  </td>
+                  <td>
+                    <span className={`pill ${o.proposed ? "rejected" : "strong"}`}>{o.proposed ? "✗ Proposed" : "✓ Left alone"}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
   );
 }

@@ -18,7 +18,7 @@ import {
   pointsElsewhere,
   sharedReferences,
 } from "./signals";
-import type { AccountInfo, EntityInfo, MatchTxn, MatcherConfig, Tier } from "./types";
+import type { AccountInfo, EntityInfo, MatchKind, MatchTxn, MatcherConfig, Tier } from "./types";
 
 export const WEIGHTS = {
   date: 0.45, // multiplied by a 0..1 date-closeness score
@@ -49,7 +49,7 @@ export type GroupScore = {
   score: number;
   reasons: string[];
   feeCents: number;
-  kind: "same_entity" | "intercompany";
+  kind: MatchKind;
   /** Some matches always go to a human, however high they score. */
   mustReview: boolean;
 };
@@ -66,7 +66,11 @@ export function scoreGroup(outs: MatchTxn[], ins: MatchTxn[], lookup: Lookup): G
   const outAccounts = outs.map((t) => lookup.account(t.accountId));
   const inAccounts = ins.map((t) => lookup.account(t.accountId));
   const entityIds = new Set([...outAccounts, ...inAccounts].map((a) => a.entityId));
-  const kind = entityIds.size > 1 ? "intercompany" : "same_entity";
+  const kind: MatchKind = [...entityIds].some((id) => lookup.entity(id).kind === "personal")
+    ? "owner"
+    : entityIds.size > 1
+      ? "intercompany"
+      : "same_entity";
 
   // --- Timing: use the WORST pair, so one far-off leg can't hide in an average.
   let worstCloseness = 1;
@@ -124,8 +128,8 @@ export function scoreGroup(outs: MatchTxn[], ins: MatchTxn[], lookup: Lookup): G
     reasons.push(`Memo references the other account (...${(outRefsIn ?? inRefsOut)!.last4})`);
   }
 
-  // --- Intercompany: does either side name the other entity?
-  if (kind === "intercompany") {
+  // --- Different entities: does either side name the other one?
+  if (kind !== "same_entity") {
     const inEntities = [...new Set(inAccounts.map((a) => a.entityId))].map(lookup.entity);
     const outEntities = [...new Set(outAccounts.map((a) => a.entityId))].map(lookup.entity);
     const named =

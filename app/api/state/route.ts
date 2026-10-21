@@ -11,6 +11,13 @@ export const dynamic = "force-dynamic";
 export const GET = route(({ db, user }) => ({
   user,
   users: db.prepare("SELECT id, name, role FROM users ORDER BY id DESC").all(),
+  entities: db
+    .prepare(
+      `SELECT e.id, e.name, e.kind FROM entities e
+         JOIN user_entity_access a ON a.entity_id = e.id AND a.user_id = ?
+        ORDER BY e.kind, e.name`,
+    )
+    .all(user.id),
   proposals: listProposals(db, user, ["proposed"]),
   decided: listProposals(db, user, ["applied", "rejected", "reversed"]).sort((a, b) =>
     (b.decidedAt ?? "").localeCompare(a.decidedAt ?? ""),

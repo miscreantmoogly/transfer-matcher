@@ -12,6 +12,7 @@ export type { ProposalView, LegView, BooksSummary, UnmatchedTxn, CurrentUser };
 export type AppState = {
   user: CurrentUser;
   users: { id: string; name: string; role: string }[];
+  entities: { id: string; name: string; kind: "business" | "personal" }[];
   proposals: ProposalView[];
   decided: ProposalView[];
   hiddenProposals: number;
@@ -59,7 +60,7 @@ export function matchTitle(p: ProposalView): string {
   const outs = p.legs.filter((l) => l.direction === "out");
   const ins = p.legs.filter((l) => l.direction === "in");
   const names = (legs: LegView[], key: "entityName" | "accountName") => [...new Set(legs.map((l) => l[key]))].join(" + ");
-  const key = p.kind === "intercompany" ? "entityName" : "accountName";
+  const key = p.kind === "same_entity" ? "accountName" : "entityName";
   return `${names(outs, key)} to ${names(ins, key)}`;
 }
 
@@ -72,7 +73,9 @@ export function plainEffects(p: ProposalView): string[] {
   const ins = p.legs.filter((l) => l.direction === "in");
   const effects: string[] = [];
 
+  // Personal-account lines aren't on any business's books, so they're only tagged.
   for (const leg of [...outs, ...ins]) {
+    if (leg.entityKind === "personal") continue;
     effects.push(`Removes ${money(Math.abs(leg.amountCents))} from ${leg.importCategory} (${leg.entityName})`);
   }
 
@@ -82,12 +85,24 @@ export function plainEffects(p: ProposalView): string[] {
       : outs.map((from) => ({ from, to: ins[0], cents: -from.amountCents }));
   for (const f of flows) {
     if (f.from.entityId === f.to.entityId) continue;
-    effects.push(`Records that ${f.to.entityName} owes ${f.from.entityName} ${money(f.cents)}`);
+    if (f.to.entityKind === "personal") {
+      effects.push(`Records a ${money(f.cents)} owner's draw from ${f.from.entityName}: equity, not an expense`);
+    } else if (f.from.entityKind === "personal") {
+      effects.push(`Records ${money(f.cents)} the owner put into ${f.to.entityName}: equity, not income`);
+    } else {
+      effects.push(`Records that ${f.to.entityName} owes ${f.from.entityName} ${money(f.cents)}`);
+    }
   }
   if (p.kind === "same_entity") effects.push("Money just moved between your own accounts, so profit doesn't change");
   if (p.feeCents > 0) effects.push(`Books the missing ${money(p.feeCents)} as a bank fee on ${ins[0].entityName}`);
   return effects;
 }
+
+export const KIND_LABEL: Record<string, string> = {
+  same_entity: "Between your accounts",
+  intercompany: "Between your businesses",
+  owner: "Owner's personal account",
+};
 
 /** Reasons that count AGAINST the match get flagged in the UI. */
 export const isAgainst = (reason: string) => reason.includes("looks like a real") || reason.includes("points to a different");

@@ -28,7 +28,7 @@ const transactions = feed.transactions.map((t) => ({
   memo: t.memo,
 }));
 const accounts = BANK_ACCOUNTS.map((a) => ({ id: a.id, entityId: a.entityId, last4: a.last4 }));
-const entities = ENTITIES.map((e) => ({ id: e.id, name: e.name }));
+const entities = ENTITIES.map((e) => ({ id: e.id, name: e.name, kind: e.kind }));
 const truthByKey = new Map(truth.groups.map((g) => [legsKeyOf([...g.outs, ...g.ins]), g]));
 const memoOf = new Map(feed.transactions.map((t) => [t.providerTxnId, `${t.postedDate} ${t.accountId} ${(t.amountCents / 100).toFixed(2)} "${t.memo}"`]));
 

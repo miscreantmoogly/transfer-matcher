@@ -1,14 +1,25 @@
-// The demo customer: a fictional family cattle operation run as two legal
-// entities. The son runs Cedar Creek Cattle Co. and also keeps the books for
-// his father's Hollis Ranch LLC, so money moves between the two all the time.
+// The demo customer: a fictional family cattle operation, the Hollis family.
+//
+//   Cedar Creek Cattle Co.  the son (Wes) runs it
+//   Hollis Ranch LLC        his father's ranch; Wes keeps its books too
+//   Hollis Land Co.         holds the family's land and leases pasture to both ranches
+//   Wes Hollis (personal)   Wes's own checking account, connected so owner's
+//                           draws and contributions can be recognized
+//
+// Money moves between all four in different ways: loans between the ranches,
+// sweeps between a business's own accounts, owner's draws, and real
+// intercompany business (pasture rent, a hay sale) that is NOT a transfer.
 
-export type EntityDef = { id: string; name: string; shortName: string };
+export type EntityKind = "business" | "personal";
+export type EntityDef = { id: string; name: string; shortName: string; kind: EntityKind };
 export type BankAccountDef = { id: string; entityId: string; name: string; last4: string };
 export type UserDef = { id: string; name: string; role: string; entityIds: string[] };
 
 export const ENTITIES: EntityDef[] = [
-  { id: "cedar", name: "Cedar Creek Cattle Co.", shortName: "CEDAR CREEK CATTLE" },
-  { id: "hollis", name: "Hollis Ranch LLC", shortName: "HOLLIS RANCH" },
+  { id: "cedar", name: "Cedar Creek Cattle Co.", shortName: "CEDAR CREEK CATTLE", kind: "business" },
+  { id: "hollis", name: "Hollis Ranch LLC", shortName: "HOLLIS RANCH", kind: "business" },
+  { id: "land", name: "Hollis Land Co.", shortName: "HOLLIS LAND CO", kind: "business" },
+  { id: "wes", name: "Wes Hollis (personal)", shortName: "WES HOLLIS", kind: "personal" },
 ];
 
 export const BANK_ACCOUNTS: BankAccountDef[] = [
@@ -16,13 +27,15 @@ export const BANK_ACCOUNTS: BankAccountDef[] = [
   { id: "cedar-sav", entityId: "cedar", name: "Cedar Reserve Savings", last4: "7730" },
   { id: "hollis-chk", entityId: "hollis", name: "Hollis Operating Checking", last4: "1956" },
   { id: "hollis-sav", entityId: "hollis", name: "Hollis Equipment Savings", last4: "3307" },
+  { id: "land-chk", entityId: "land", name: "Land Co. Checking", last4: "5582" },
+  { id: "wes-chk", entityId: "wes", name: "Wes Personal Checking", last4: "6610" },
 ];
 
 export const USERS: UserDef[] = [
-  // The owner-operator: sees and manages both entities.
-  { id: "wes", name: "Wes (owner)", role: "owner", entityIds: ["cedar", "hollis"] },
+  // The owner-operator: sees and manages everything, including his own account.
+  { id: "wes", name: "Wes Hollis", role: "Owner", entityIds: ["cedar", "hollis", "land", "wes"] },
   // A part-time bookkeeper who only works on Hollis Ranch's books.
-  { id: "dana", name: "Dana (Hollis bookkeeper)", role: "bookkeeper", entityIds: ["hollis"] },
+  { id: "dana", name: "Dana Ortiz", role: "Bookkeeper, Hollis Ranch", entityIds: ["hollis"] },
 ];
 
 export type CategoryDef = {
@@ -34,16 +47,23 @@ export type CategoryDef = {
 export const CATEGORIES: CategoryDef[] = [
   { slug: "cattle_sales", name: "Cattle Sales", type: "income" },
   { slug: "hay_sales", name: "Hay Sales", type: "income" },
+  { slug: "rental_income", name: "Rental Income", type: "income" },
   { slug: "gov_payments", name: "Government Program Payments", type: "income" },
   { slug: "interest_income", name: "Interest Income", type: "income" },
   { slug: "uncategorized_income", name: "Uncategorized Income", type: "income" },
-  { slug: "feed", name: "Feed", type: "expense" },
+  { slug: "feed", name: "Feed & Hay", type: "expense" },
   { slug: "fuel", name: "Fuel", type: "expense" },
   { slug: "vet", name: "Vet & Medicine", type: "expense" },
   { slug: "repairs", name: "Repairs & Maintenance", type: "expense" },
   { slug: "labor", name: "Labor", type: "expense" },
+  { slug: "rent", name: "Pasture Rent", type: "expense" },
+  { slug: "property_tax", name: "Property Tax", type: "expense" },
+  { slug: "household", name: "Household", type: "expense" },
   { slug: "uncategorized_expense", name: "Uncategorized Expense", type: "expense" },
 ];
+
+export const entityKind = (entityId: string): EntityKind =>
+  ENTITIES.find((e) => e.id === entityId)?.kind ?? "business";
 
 // Ledger account ids are "<entity>:<slug>" so they're readable in SQL.
 export const ledgerId = (entityId: string, slug: string) => `${entityId}:${slug}`;
@@ -56,3 +76,8 @@ export const clearingLedgerId = (entityId: string) => ledgerId(entityId, "transf
 export const bankFeesLedgerId = (entityId: string) => ledgerId(entityId, "bank_fees");
 export const dueFromLedgerId = (entityId: string, other: string) => ledgerId(entityId, `due_from_${other}`);
 export const dueToLedgerId = (entityId: string, other: string) => ledgerId(entityId, `due_to_${other}`);
+/** Business books: money the owner took out (debit) or put in (credit). Both are equity, never income or expense. */
+export const ownerDrawsLedgerId = (entityId: string) => ledgerId(entityId, "owner_draws");
+export const ownerContributionsLedgerId = (entityId: string) => ledgerId(entityId, "owner_contributions");
+/** Personal books: the other side of draws and contributions. */
+export const ownerTransfersLedgerId = (entityId: string) => ledgerId(entityId, "transfers_with_businesses");

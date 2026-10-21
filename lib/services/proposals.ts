@@ -12,7 +12,15 @@
 import type { DB } from "../db";
 import { canSeeAll, type CurrentUser } from "../auth";
 import { badRequest, conflict, forbidden, notFound } from "../errors";
-import { bankFeesLedgerId, clearingLedgerId, dueFromLedgerId, dueToLedgerId } from "../org";
+import {
+  bankFeesLedgerId,
+  clearingLedgerId,
+  dueFromLedgerId,
+  dueToLedgerId,
+  ownerContributionsLedgerId,
+  ownerDrawsLedgerId,
+  ownerTransfersLedgerId,
+} from "../org";
 import { legsKeyOf } from "../matcher";
 import { DEFAULT_CONFIG } from "../matcher/types";
 import { enqueue } from "./jobs";
@@ -27,6 +35,7 @@ export type LegView = {
   last4: string;
   entityId: string;
   entityName: string;
+  entityKind: "business" | "personal";
   postedDate: string;
   amountCents: number;
   memo: string;
@@ -36,7 +45,7 @@ export type LegView = {
 export type ProposalView = {
   id: number;
   status: string;
-  kind: "same_entity" | "intercompany";
+  kind: "same_entity" | "intercompany" | "owner";
   source: "matcher" | "manual";
   tier: "high" | "review";
   confidence: number;
@@ -53,7 +62,7 @@ export type ProposalView = {
 type ProposalRow = {
   id: number;
   status: string;
-  kind: "same_entity" | "intercompany";
+  kind: "same_entity" | "intercompany" | "owner";
   source: "matcher" | "manual";
   tier: "high" | "review";
   confidence: number;
@@ -74,7 +83,7 @@ function legsOf(db: DB, proposalId: number): LegView[] {
   return db
     .prepare(
       `SELECT l.transaction_id AS transactionId, l.direction, t.account_id AS accountId, ba.name AS accountName,
-              ba.last4, ba.entity_id AS entityId, e.name AS entityName, t.posted_date AS postedDate,
+              ba.last4, ba.entity_id AS entityId, e.name AS entityName, e.kind AS entityKind, t.posted_date AS postedDate,
               t.amount_cents AS amountCents, t.memo,
               (SELECT la.name FROM journal_entries je
                  JOIN journal_lines jl ON jl.entry_id = je.id
@@ -206,12 +215,16 @@ export function buildTransferEntries(db: DB, view: ProposalView, actor: string):
       ? ins.map((to) => ({ from: outs[0], to, cents: ins.length === 1 ? -outs[0].amountCents : to.amountCents }))
       : outs.map((from) => ({ from, to: ins[0], cents: -from.amountCents }));
 
-  const counterpartFor = (leg: LegView, other: LegView, side: "sender" | "receiver") =>
-    leg.entityId === other.entityId
-      ? clearingLedgerId(leg.entityId)
-      : side === "sender"
-        ? dueFromLedgerId(leg.entityId, other.entityId)
-        : dueToLedgerId(leg.entityId, other.entityId);
+  const counterpartFor = (leg: LegView, other: LegView, side: "sender" | "receiver") => {
+    if (leg.entityId === other.entityId) return clearingLedgerId(leg.entityId);
+    // The owner's personal account: the personal side records money to/from
+    // the businesses; the business side records equity, never income or expense.
+    if (leg.entityKind === "personal") return ownerTransfersLedgerId(leg.entityId);
+    if (other.entityKind === "personal") {
+      return side === "sender" ? ownerDrawsLedgerId(leg.entityId) : ownerContributionsLedgerId(leg.entityId);
+    }
+    return side === "sender" ? dueFromLedgerId(leg.entityId, other.entityId) : dueToLedgerId(leg.entityId, other.entityId);
+  };
 
   const entries: EntryInput[] = [];
   for (const leg of outs) {
@@ -347,11 +360,12 @@ export function manualMatch(db: DB, user: CurrentUser, transactionIds: number[])
       }
       const rows = db
         .prepare(
-          `SELECT t.id, t.amount_cents, t.account_id, ba.entity_id FROM bank_transactions t
+          `SELECT t.id, t.amount_cents, t.account_id, ba.entity_id, e.kind AS entity_kind FROM bank_transactions t
              JOIN bank_accounts ba ON ba.id = t.account_id
+             JOIN entities e ON e.id = ba.entity_id
             WHERE t.id IN (${transactionIds.map(() => "?").join(",")})`,
         )
-        .all(...transactionIds) as { id: number; amount_cents: number; account_id: string; entity_id: string }[];
+        .all(...transactionIds) as { id: number; amount_cents: number; account_id: string; entity_id: string; entity_kind: string }[];
       if (rows.length !== transactionIds.length) throw notFound("Transaction");
       if (!canSeeAll(user, rows.map((r) => r.entity_id))) throw forbidden("You can't see all of these accounts");
 
@@ -383,7 +397,11 @@ export function manualMatch(db: DB, user: CurrentUser, transactionIds: number[])
         db.prepare("UPDATE match_legs SET active = 0 WHERE proposal_id = ?").run(c.id);
       }
 
-      const kind = new Set(rows.map((r) => r.entity_id)).size > 1 ? "intercompany" : "same_entity";
+      const kind = rows.some((r) => r.entity_kind === "personal")
+        ? "owner"
+        : new Set(rows.map((r) => r.entity_id)).size > 1
+          ? "intercompany"
+          : "same_entity";
       const legsKey = legsKeyOf(transactionIds.map(String));
       const id = Number(
         db

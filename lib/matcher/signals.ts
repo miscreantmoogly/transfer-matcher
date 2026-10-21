@@ -7,8 +7,16 @@ import type { EntityInfo } from "./types";
 
 const TRANSFER_WORDS = /\b(TRANSFER|XFER|TRSF|WIRE)\b/;
 
-// Words that appear in lots of business names and so don't identify anyone.
-const GENERIC_NAME_WORDS = new Set(["CO", "LLC", "INC", "LTD", "CATTLE", "RANCH", "FARM", "FARMS", "THE", "AND", "COMPANY"]);
+// Legal suffixes don't identify anyone.
+const LEGAL_SUFFIXES = new Set(["CO", "LLC", "INC", "LTD", "CORP", "COMPANY"]);
+
+const normalize = (text: string) =>
+  text
+    .toUpperCase()
+    .replace(/\(.*?\)/g, " ")
+    .replace(/[^A-Z0-9 ]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
 
 export function hasTransferWords(memo: string): boolean {
   return TRANSFER_WORDS.test(memo.toUpperCase());
@@ -19,18 +27,20 @@ export function mentionsLast4(memo: string, last4: string): boolean {
   return new RegExp(`(^|\\D)${last4}(\\D|$)`).test(memo);
 }
 
-/** Distinctive words in an entity's name, e.g. "Cedar Creek Cattle Co." -> ["CEDAR", "CREEK"]. */
-export function distinctiveNameTokens(entityName: string): string[] {
-  return entityName
-    .toUpperCase()
-    .replace(/[^A-Z0-9 ]/g, " ")
-    .split(/\s+/)
-    .filter((w) => w.length >= 3 && !GENERIC_NAME_WORDS.has(w));
+/**
+ * The phrase a bank memo would use for an entity: its first two name words.
+ * "Cedar Creek Cattle Co." -> "CEDAR CREEK", "Hollis Ranch LLC" -> "HOLLIS RANCH",
+ * "Hollis Land Co." -> "HOLLIS LAND". A phrase, not single words, because
+ * related entities share words: "HOLLIS" alone can't tell the ranch from the land company.
+ */
+export function entityPhrase(entityName: string): string {
+  const words = normalize(entityName);
+  while (words.length > 1 && LEGAL_SUFFIXES.has(words[words.length - 1])) words.pop();
+  return words.slice(0, 2).join(" ");
 }
 
 export function mentionsEntity(memo: string, entity: EntityInfo): boolean {
-  const words = new Set(memo.toUpperCase().replace(/[^A-Z0-9 ]/g, " ").split(/\s+/));
-  return distinctiveNameTokens(entity.name).some((t) => words.has(t));
+  return ` ${normalize(memo).join(" ")} `.includes(` ${entityPhrase(entity.name)} `);
 }
 
 /**

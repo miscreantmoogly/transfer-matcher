@@ -6,6 +6,22 @@
   ],
   "transactions": [
     {
+      "providerTxnId": "ptx_0216pzfvol",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-01",
+      "amountCents": -300000,
+      "memo": "PASTURE LEASE - HOLLIS LAND CO",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_02224t7ji7",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-07-01",
+      "amountCents": -220000,
+      "memo": "PASTURE LEASE - HOLLIS LAND CO",
+      "batch": 1
+    },
+    {
       "providerTxnId": "ptx_0046fxzntg",
       "accountId": "cedar-chk",
       "postedDate": "2026-07-02",
@@ -22,7 +38,15 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0107zewvv1",
+      "providerTxnId": "ptx_0110i47lnu",
+      "accountId": "wes-chk",
+      "postedDate": "2026-07-02",
+      "amountCents": -20397,
+      "memo": "GROCERY OUTLET",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0131rka5ym",
       "accountId": "cedar-chk",
       "postedDate": "2026-07-02",
       "amountCents": -1500000,
@@ -30,7 +54,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0108745815",
+      "providerTxnId": "ptx_0132ruf24a",
       "accountId": "cedar-sav",
       "postedDate": "2026-07-02",
       "amountCents": 1500000,
@@ -38,7 +62,31 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01290cjt92",
+      "providerTxnId": "ptx_0217vazmk6",
+      "accountId": "land-chk",
+      "postedDate": "2026-07-02",
+      "amountCents": 300000,
+      "memo": "LEASE PMT CEDAR CREEK CATTLE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_02239i95go",
+      "accountId": "land-chk",
+      "postedDate": "2026-07-02",
+      "amountCents": 220000,
+      "memo": "LEASE PMT HOLLIS RANCH",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_011178nkxb",
+      "accountId": "wes-chk",
+      "postedDate": "2026-07-03",
+      "amountCents": -5329,
+      "memo": "GROCERY OUTLET",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0153jlflvw",
       "accountId": "cedar-chk",
       "postedDate": "2026-07-03",
       "amountCents": -150000,
@@ -46,7 +94,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0130rb79ao",
+      "providerTxnId": "ptx_0154e75yed",
       "accountId": "cedar-sav",
       "postedDate": "2026-07-03",
       "amountCents": 150000,
@@ -78,6 +126,30 @@
       "batch": 1
     },
     {
+      "providerTxnId": "ptx_0112ex1plt",
+      "accountId": "wes-chk",
+      "postedDate": "2026-07-06",
+      "amountCents": -31822,
+      "memo": "COSTCO WHOLESALE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0187hy328y",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-07-06",
+      "amountCents": -350000,
+      "memo": "ONLINE TRANSFER TO CHK ...6610",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0188p3y0ff",
+      "accountId": "wes-chk",
+      "postedDate": "2026-07-06",
+      "amountCents": 350000,
+      "memo": "ONLINE TRANSFER FROM CHK ...4821",
+      "batch": 1
+    },
+    {
       "providerTxnId": "ptx_0003o0mn52",
       "accountId": "cedar-chk",
       "postedDate": "2026-07-07",
@@ -94,7 +166,15 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0151z2kyf9",
+      "providerTxnId": "ptx_0113pux588",
+      "accountId": "wes-chk",
+      "postedDate": "2026-07-07",
+      "amountCents": -14504,
+      "memo": "GROCERY OUTLET",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0175cqxuhr",
       "accountId": "hollis-chk",
       "postedDate": "2026-07-07",
       "amountCents": -1600000,
@@ -126,7 +206,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0109euhv1e",
+      "providerTxnId": "ptx_0133497nz4",
       "accountId": "hollis-chk",
       "postedDate": "2026-07-09",
       "amountCents": -800000,
@@ -150,7 +230,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01102tr8bp",
+      "providerTxnId": "ptx_01345s41om",
       "accountId": "hollis-sav",
       "postedDate": "2026-07-10",
       "amountCents": 800000,
@@ -174,7 +254,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0152k8u23j",
+      "providerTxnId": "ptx_0176rv424q",
       "accountId": "cedar-chk",
       "postedDate": "2026-07-13",
       "amountCents": 1600000,
@@ -190,7 +270,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01114m44t3",
+      "providerTxnId": "ptx_0135y4v3pq",
       "accountId": "cedar-chk",
       "postedDate": "2026-07-14",
       "amountCents": -4000000,
@@ -222,7 +302,15 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0112muub9h",
+      "providerTxnId": "ptx_0107euhv1e",
+      "accountId": "land-chk",
+      "postedDate": "2026-07-15",
+      "amountCents": -479120,
+      "memo": "COUNTY TREASURER PROPERTY TAX",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0136jfz8l6",
       "accountId": "hollis-chk",
       "postedDate": "2026-07-15",
       "amountCents": 4000000,
@@ -270,7 +358,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0163gduc6g",
+      "providerTxnId": "ptx_0199gmu04p",
       "accountId": "cedar-chk",
       "postedDate": "2026-07-16",
       "amountCents": -5000000,
@@ -286,7 +374,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01317y0yuc",
+      "providerTxnId": "ptx_015546q94s",
       "accountId": "cedar-chk",
       "postedDate": "2026-07-17",
       "amountCents": -150000,
@@ -294,7 +382,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0132ex1plt",
+      "providerTxnId": "ptx_0156w32qqk",
       "accountId": "cedar-sav",
       "postedDate": "2026-07-17",
       "amountCents": 150000,
@@ -302,7 +390,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0164hygt95",
+      "providerTxnId": "ptx_02009zwwg1",
       "accountId": "hollis-chk",
       "postedDate": "2026-07-17",
       "amountCents": 3000000,
@@ -310,7 +398,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01658pqang",
+      "providerTxnId": "ptx_02015fwtj1",
       "accountId": "hollis-sav",
       "postedDate": "2026-07-17",
       "amountCents": 2000000,
@@ -342,6 +430,22 @@
       "batch": 1
     },
     {
+      "providerTxnId": "ptx_0114f18zad",
+      "accountId": "wes-chk",
+      "postedDate": "2026-07-20",
+      "amountCents": -5596,
+      "memo": "GROCERY OUTLET",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0128cjy2f4",
+      "accountId": "wes-chk",
+      "postedDate": "2026-07-20",
+      "amountCents": -13859,
+      "memo": "VERIZON WIRELESS",
+      "batch": 1
+    },
+    {
       "providerTxnId": "ptx_0013jm7yd9",
       "accountId": "cedar-chk",
       "postedDate": "2026-07-21",
@@ -350,7 +454,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0143vlb9y1",
+      "providerTxnId": "ptx_0167b80qrg",
       "accountId": "cedar-chk",
       "postedDate": "2026-07-21",
       "amountCents": -1250000,
@@ -358,7 +462,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0177s5vko4",
+      "providerTxnId": "ptx_0213bkmelr",
       "accountId": "hollis-sav",
       "postedDate": "2026-07-21",
       "amountCents": 1250000,
@@ -374,7 +478,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0144vcv9a8",
+      "providerTxnId": "ptx_0168qniu9u",
       "accountId": "hollis-chk",
       "postedDate": "2026-07-22",
       "amountCents": 1250000,
@@ -390,7 +494,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01552gval1",
+      "providerTxnId": "ptx_0179i26vcl",
       "accountId": "cedar-chk",
       "postedDate": "2026-07-23",
       "amountCents": -7500000,
@@ -398,7 +502,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0156ykqb2g",
+      "providerTxnId": "ptx_01800iyatt",
       "accountId": "hollis-chk",
       "postedDate": "2026-07-23",
       "amountCents": 7498500,
@@ -438,7 +542,15 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0113kzgwnw",
+      "providerTxnId": "ptx_0115qafxb7",
+      "accountId": "wes-chk",
+      "postedDate": "2026-07-28",
+      "amountCents": -13123,
+      "memo": "GROCERY OUTLET",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_013710k4mm",
       "accountId": "hollis-chk",
       "postedDate": "2026-07-28",
       "amountCents": -2200000,
@@ -494,7 +606,23 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01149sa67i",
+      "providerTxnId": "ptx_0116jh5hr0",
+      "accountId": "wes-chk",
+      "postedDate": "2026-07-30",
+      "amountCents": -21277,
+      "memo": "GROCERY OUTLET",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0117jbtd0i",
+      "accountId": "wes-chk",
+      "postedDate": "2026-07-30",
+      "amountCents": -31638,
+      "memo": "COSTCO WHOLESALE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0138rsd5y8",
       "accountId": "cedar-chk",
       "postedDate": "2026-07-30",
       "amountCents": 2200000,
@@ -502,7 +630,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0125ahoy6y",
+      "providerTxnId": "ptx_0149te3w1i",
       "accountId": "cedar-sav",
       "postedDate": "2026-07-30",
       "amountCents": -500000,
@@ -510,7 +638,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_012678nkxb",
+      "providerTxnId": "ptx_0150jtu5l9",
       "accountId": "cedar-chk",
       "postedDate": "2026-07-30",
       "amountCents": 500000,
@@ -518,7 +646,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01761vs55f",
+      "providerTxnId": "ptx_0212nwp9nv",
       "accountId": "hollis-chk",
       "postedDate": "2026-07-30",
       "amountCents": -500000,
@@ -550,7 +678,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01331bub81",
+      "providerTxnId": "ptx_01575z52lu",
       "accountId": "cedar-chk",
       "postedDate": "2026-07-31",
       "amountCents": -150000,
@@ -558,7 +686,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0134h9g2na",
+      "providerTxnId": "ptx_015840824x",
       "accountId": "cedar-sav",
       "postedDate": "2026-07-31",
       "amountCents": 150000,
@@ -571,6 +699,38 @@
       "postedDate": "2026-08-03",
       "amountCents": -596103,
       "memo": "HIGH PLAINS FEED CO INV 4986",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0189qbl5ww",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-03",
+      "amountCents": -350000,
+      "memo": "ONLINE TRANSFER TO CHK ...6610",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0190twfu11",
+      "accountId": "wes-chk",
+      "postedDate": "2026-08-03",
+      "amountCents": 350000,
+      "memo": "ONLINE TRANSFER FROM CHK ...4821",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0218s1pamp",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-03",
+      "amountCents": -300000,
+      "memo": "PASTURE LEASE - HOLLIS LAND CO",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0224of38ul",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-03",
+      "amountCents": -220000,
+      "memo": "PASTURE LEASE - HOLLIS LAND CO",
       "batch": 1
     },
     {
@@ -590,7 +750,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0115os3raf",
+      "providerTxnId": "ptx_013960ynlj",
       "accountId": "cedar-sav",
       "postedDate": "2026-08-04",
       "amountCents": -3000000,
@@ -598,11 +758,27 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0116x8eu8z",
+      "providerTxnId": "ptx_014028iymv",
       "accountId": "cedar-chk",
       "postedDate": "2026-08-04",
       "amountCents": 3000000,
       "memo": "ONLINE TRANSFER FROM SAV ...7730",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_02198atywp",
+      "accountId": "land-chk",
+      "postedDate": "2026-08-04",
+      "amountCents": 300000,
+      "memo": "LEASE PMT CEDAR CREEK CATTLE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0225t4nhjb",
+      "accountId": "land-chk",
+      "postedDate": "2026-08-04",
+      "amountCents": 220000,
+      "memo": "LEASE PMT HOLLIS RANCH",
       "batch": 1
     },
     {
@@ -630,7 +806,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01534e5iet",
+      "providerTxnId": "ptx_0177g9qsac",
       "accountId": "cedar-chk",
       "postedDate": "2026-08-06",
       "amountCents": -550000,
@@ -678,11 +854,35 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0127xlb1ii",
+      "providerTxnId": "ptx_0118cfgo70",
+      "accountId": "wes-chk",
+      "postedDate": "2026-08-10",
+      "amountCents": -21979,
+      "memo": "GROCERY OUTLET",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0193wr0632",
+      "accountId": "wes-chk",
+      "postedDate": "2026-08-10",
+      "amountCents": -700000,
+      "memo": "MOBILE XFER TO HOLLIS RANCH",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_015112gx4t",
       "accountId": "cedar-chk",
       "postedDate": "2026-08-11",
       "amountCents": -1850000,
       "memo": "ONLINE TRANSFER TO CHK ...1956",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0194cfb1uz",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-11",
+      "amountCents": 700000,
+      "memo": "TRANSFER FROM WES HOLLIS",
       "batch": 1
     },
     {
@@ -710,7 +910,15 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01288oniio",
+      "providerTxnId": "ptx_0109os3raf",
+      "accountId": "land-chk",
+      "postedDate": "2026-08-12",
+      "amountCents": -65027,
+      "memo": "WESTERN EQUIP CO REPAIR FENCE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0152slmx4h",
       "accountId": "hollis-chk",
       "postedDate": "2026-08-12",
       "amountCents": 1850000,
@@ -718,7 +926,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0150iulbo0",
+      "providerTxnId": "ptx_0174ellzdt",
       "accountId": "cedar-chk",
       "postedDate": "2026-08-12",
       "amountCents": 1000000,
@@ -742,7 +950,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0149hs0o2h",
+      "providerTxnId": "ptx_0173ef15sw",
       "accountId": "cedar-sav",
       "postedDate": "2026-08-13",
       "amountCents": -1000000,
@@ -750,7 +958,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01545ijtoa",
+      "providerTxnId": "ptx_0178zx21uz",
       "accountId": "hollis-sav",
       "postedDate": "2026-08-13",
       "amountCents": 550000,
@@ -774,7 +982,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_013519zyv8",
+      "providerTxnId": "ptx_0159q5ae9o",
       "accountId": "cedar-chk",
       "postedDate": "2026-08-14",
       "amountCents": -150000,
@@ -782,7 +990,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0136pux588",
+      "providerTxnId": "ptx_01605nf23v",
       "accountId": "cedar-sav",
       "postedDate": "2026-08-14",
       "amountCents": 150000,
@@ -790,7 +998,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0159x0p593",
+      "providerTxnId": "ptx_0183wwrl4f",
       "accountId": "cedar-sav",
       "postedDate": "2026-08-17",
       "amountCents": -250000,
@@ -830,7 +1038,15 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01173eswcg",
+      "providerTxnId": "ptx_0119ni7t5c",
+      "accountId": "wes-chk",
+      "postedDate": "2026-08-19",
+      "amountCents": -16945,
+      "memo": "GROCERY OUTLET",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0141e66e61",
       "accountId": "hollis-sav",
       "postedDate": "2026-08-19",
       "amountCents": -600000,
@@ -838,7 +1054,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_011803buzb",
+      "providerTxnId": "ptx_01425n2lzx",
       "accountId": "hollis-chk",
       "postedDate": "2026-08-19",
       "amountCents": 600000,
@@ -846,7 +1062,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01609if2m7",
+      "providerTxnId": "ptx_0184b0tk9y",
       "accountId": "hollis-sav",
       "postedDate": "2026-08-19",
       "amountCents": 250000,
@@ -854,7 +1070,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0161cep76r",
+      "providerTxnId": "ptx_01853og95g",
       "accountId": "cedar-sav",
       "postedDate": "2026-08-19",
       "amountCents": -250000,
@@ -862,11 +1078,35 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0173fwrzg5",
+      "providerTxnId": "ptx_0228ji7iz6",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-08-19",
+      "amountCents": -280000,
+      "memo": "HAY PURCHASE - HOLLIS RANCH",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0129z8arzn",
+      "accountId": "wes-chk",
+      "postedDate": "2026-08-20",
+      "amountCents": -11492,
+      "memo": "VERIZON WIRELESS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0209gfvbfk",
       "accountId": "cedar-chk",
       "postedDate": "2026-08-20",
       "amountCents": -1000000,
       "memo": "ONLINE TRANSFER TO CHK ...9912",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0229rs25mj",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-08-20",
+      "amountCents": 280000,
+      "memo": "HAY SALE - CEDAR CREEK CATTLE",
       "batch": 1
     },
     {
@@ -886,7 +1126,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0162uhj02q",
+      "providerTxnId": "ptx_0186a3uire",
       "accountId": "hollis-sav",
       "postedDate": "2026-08-21",
       "amountCents": 250000,
@@ -910,7 +1150,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0145ptfc39",
+      "providerTxnId": "ptx_0169ggipnh",
       "accountId": "hollis-sav",
       "postedDate": "2026-08-25",
       "amountCents": -400000,
@@ -918,7 +1158,15 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0166sntoue",
+      "providerTxnId": "ptx_0120ugg82c",
+      "accountId": "wes-chk",
+      "postedDate": "2026-08-26",
+      "amountCents": -24979,
+      "memo": "COSTCO WHOLESALE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0202l6w020",
       "accountId": "cedar-chk",
       "postedDate": "2026-08-26",
       "amountCents": -900000,
@@ -926,7 +1174,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0167p99ko4",
+      "providerTxnId": "ptx_02030dnzzn",
       "accountId": "cedar-sav",
       "postedDate": "2026-08-26",
       "amountCents": -600000,
@@ -950,7 +1198,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01469sca9r",
+      "providerTxnId": "ptx_0170gj72z0",
       "accountId": "hollis-chk",
       "postedDate": "2026-08-27",
       "amountCents": 400000,
@@ -958,7 +1206,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01684gfi72",
+      "providerTxnId": "ptx_0204rf1rzb",
       "accountId": "hollis-chk",
       "postedDate": "2026-08-27",
       "amountCents": 1500000,
@@ -974,7 +1222,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0137xmf4un",
+      "providerTxnId": "ptx_016105fgvo",
       "accountId": "cedar-chk",
       "postedDate": "2026-08-28",
       "amountCents": -150000,
@@ -982,7 +1230,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0138ojel48",
+      "providerTxnId": "ptx_0162g71a61",
       "accountId": "cedar-sav",
       "postedDate": "2026-08-28",
       "amountCents": 150000,
@@ -1014,6 +1262,14 @@
       "batch": 1
     },
     {
+      "providerTxnId": "ptx_0121qwn44n",
+      "accountId": "wes-chk",
+      "postedDate": "2026-08-31",
+      "amountCents": -14104,
+      "memo": "GROCERY OUTLET",
+      "batch": 1
+    },
+    {
       "providerTxnId": "ptx_00308bim5n",
       "accountId": "cedar-chk",
       "postedDate": "2026-09-01",
@@ -1027,6 +1283,46 @@
       "postedDate": "2026-09-01",
       "amountCents": -50929,
       "memo": "CO-OP FUEL STOP #114",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0122pgqj2x",
+      "accountId": "wes-chk",
+      "postedDate": "2026-09-01",
+      "amountCents": -24585,
+      "memo": "COSTCO WHOLESALE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0191zdbqff",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-01",
+      "amountCents": -350000,
+      "memo": "ONLINE TRANSFER TO CHK ...6610",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0192eew8m1",
+      "accountId": "wes-chk",
+      "postedDate": "2026-09-01",
+      "amountCents": 350000,
+      "memo": "ONLINE TRANSFER FROM CHK ...4821",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0220uwrw1s",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-01",
+      "amountCents": -300000,
+      "memo": "PASTURE LEASE - HOLLIS LAND CO",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0226nub3rw",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-01",
+      "amountCents": -220000,
+      "memo": "PASTURE LEASE - HOLLIS LAND CO",
       "batch": 1
     },
     {
@@ -1046,7 +1342,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0119qlivuy",
+      "providerTxnId": "ptx_0143bm5h95",
       "accountId": "cedar-chk",
       "postedDate": "2026-09-02",
       "amountCents": -2700000,
@@ -1054,7 +1350,31 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0120z8uoqh",
+      "providerTxnId": "ptx_02212nrmv8",
+      "accountId": "land-chk",
+      "postedDate": "2026-09-02",
+      "amountCents": 300000,
+      "memo": "LEASE PMT CEDAR CREEK CATTLE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0227ghwzg6",
+      "accountId": "land-chk",
+      "postedDate": "2026-09-02",
+      "amountCents": 220000,
+      "memo": "LEASE PMT HOLLIS RANCH",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0123nx1uba",
+      "accountId": "wes-chk",
+      "postedDate": "2026-09-03",
+      "amountCents": -18007,
+      "memo": "GROCERY OUTLET",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0144yr96ju",
       "accountId": "hollis-chk",
       "postedDate": "2026-09-03",
       "amountCents": 2700000,
@@ -1062,7 +1382,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0157f18zad",
+      "providerTxnId": "ptx_0181ry6f2g",
       "accountId": "cedar-chk",
       "postedDate": "2026-09-03",
       "amountCents": -235000,
@@ -1118,7 +1438,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0158iib0ze",
+      "providerTxnId": "ptx_0182fc94qg",
       "accountId": "hollis-chk",
       "postedDate": "2026-09-08",
       "amountCents": 235000,
@@ -1134,7 +1454,15 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0121i47lnu",
+      "providerTxnId": "ptx_0124rbi7n4",
+      "accountId": "wes-chk",
+      "postedDate": "2026-09-09",
+      "amountCents": -19684,
+      "memo": "GROCERY OUTLET",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0145bmlab6",
       "accountId": "hollis-chk",
       "postedDate": "2026-09-09",
       "amountCents": -900000,
@@ -1166,7 +1494,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0178rum1zl",
+      "providerTxnId": "ptx_02146ehcjr",
       "accountId": "hollis-chk",
       "postedDate": "2026-09-10",
       "amountCents": -450000,
@@ -1174,7 +1502,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0122kwtk47",
+      "providerTxnId": "ptx_01462gdtrh",
       "accountId": "cedar-sav",
       "postedDate": "2026-09-11",
       "amountCents": 900000,
@@ -1182,7 +1510,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01394r4rvc",
+      "providerTxnId": "ptx_0163c5yxgy",
       "accountId": "cedar-chk",
       "postedDate": "2026-09-11",
       "amountCents": -150000,
@@ -1190,7 +1518,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0140aykk29",
+      "providerTxnId": "ptx_01644vf12d",
       "accountId": "cedar-sav",
       "postedDate": "2026-09-11",
       "amountCents": 150000,
@@ -1198,7 +1526,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0179jh5hr0",
+      "providerTxnId": "ptx_0215p7s3yp",
       "accountId": "cedar-chk",
       "postedDate": "2026-09-11",
       "amountCents": 450000,
@@ -1222,11 +1550,43 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01471ugm9z",
+      "providerTxnId": "ptx_0125ib8po1",
+      "accountId": "wes-chk",
+      "postedDate": "2026-09-14",
+      "amountCents": -25450,
+      "memo": "GROCERY OUTLET",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0171c96dxu",
       "accountId": "cedar-sav",
       "postedDate": "2026-09-14",
       "amountCents": -750000,
       "memo": "WITHDRAWAL",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0108muub9h",
+      "accountId": "land-chk",
+      "postedDate": "2026-09-15",
+      "amountCents": -93913,
+      "memo": "FARM BUREAU INSURANCE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01951vz9jl",
+      "accountId": "cedar-chk",
+      "postedDate": "2026-09-15",
+      "amountCents": -2000000,
+      "memo": "TRANSFER TO HOLLIS RANCH",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_019775m8l7",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-15",
+      "amountCents": -2000000,
+      "memo": "TRANSFER TO HOLLIS LAND CO",
       "batch": 1
     },
     {
@@ -1238,11 +1598,27 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01233nf9ps",
+      "providerTxnId": "ptx_0147e7kk16",
       "accountId": "cedar-chk",
       "postedDate": "2026-09-16",
       "amountCents": -1200000,
       "memo": "ONLINE TRANSFER TO SAV ...7730",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_01969fhufn",
+      "accountId": "hollis-chk",
+      "postedDate": "2026-09-16",
+      "amountCents": 2000000,
+      "memo": "TRANSFER FROM CEDAR CREEK CATTLE",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0198q5g1oa",
+      "accountId": "land-chk",
+      "postedDate": "2026-09-16",
+      "amountCents": 2000000,
+      "memo": "TRANSFER FROM HOLLIS RANCH",
       "batch": 1
     },
     {
@@ -1254,7 +1630,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_012428lru4",
+      "providerTxnId": "ptx_01489sntzf",
       "accountId": "cedar-sav",
       "postedDate": "2026-09-17",
       "amountCents": 1200000,
@@ -1262,7 +1638,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0148n2h307",
+      "providerTxnId": "ptx_0172caluvc",
       "accountId": "hollis-chk",
       "postedDate": "2026-09-17",
       "amountCents": 750000,
@@ -1270,7 +1646,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0174knbug5",
+      "providerTxnId": "ptx_021057li11",
       "accountId": "hollis-chk",
       "postedDate": "2026-09-17",
       "amountCents": -800000,
@@ -1278,7 +1654,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0175zgg17z",
+      "providerTxnId": "ptx_0211mkv7p2",
       "accountId": "hollis-chk",
       "postedDate": "2026-09-18",
       "amountCents": 800000,
@@ -1310,7 +1686,23 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_01800scup2",
+      "providerTxnId": "ptx_01268zyxaz",
+      "accountId": "wes-chk",
+      "postedDate": "2026-09-21",
+      "amountCents": -4715,
+      "memo": "GROCERY OUTLET",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0130wlj1l6",
+      "accountId": "wes-chk",
+      "postedDate": "2026-09-21",
+      "amountCents": -13578,
+      "memo": "VERIZON WIRELESS",
+      "batch": 1
+    },
+    {
+      "providerTxnId": "ptx_0230eqxywz",
       "accountId": "hollis-chk",
       "postedDate": "2026-09-21",
       "amountCents": -320000,
@@ -1326,7 +1718,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0181r4o3ih",
+      "providerTxnId": "ptx_0231xz9gv0",
       "accountId": "cedar-sav",
       "postedDate": "2026-09-22",
       "amountCents": 320000,
@@ -1358,7 +1750,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_016923ckjf",
+      "providerTxnId": "ptx_0205uno2sa",
       "accountId": "hollis-chk",
       "postedDate": "2026-09-24",
       "amountCents": -1100000,
@@ -1382,7 +1774,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0141shxgc0",
+      "providerTxnId": "ptx_0165r64q79",
       "accountId": "cedar-chk",
       "postedDate": "2026-09-25",
       "amountCents": -150000,
@@ -1390,7 +1782,7 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0142sju8z0",
+      "providerTxnId": "ptx_0166pdez91",
       "accountId": "cedar-sav",
       "postedDate": "2026-09-25",
       "amountCents": 150000,
@@ -1398,7 +1790,15 @@
       "batch": 1
     },
     {
-      "providerTxnId": "ptx_0170ev2t3u",
+      "providerTxnId": "ptx_0127xquyu4",
+      "accountId": "wes-chk",
+      "postedDate": "2026-09-28",
+      "amountCents": -13229,
+      "memo": "GROCERY OUTLET",
+      "batch": 2
+    },
+    {
+      "providerTxnId": "ptx_02067z8br5",
       "accountId": "cedar-chk",
       "postedDate": "2026-09-28",
       "amountCents": 1100000,
@@ -1414,7 +1814,7 @@
       "batch": 2
     },
     {
-      "providerTxnId": "ptx_01718cmluf",
+      "providerTxnId": "ptx_0207qm6f8p",
       "accountId": "cedar-chk",
       "postedDate": "2026-09-29",
       "amountCents": -300000,
@@ -1422,7 +1822,7 @@
       "batch": 2
     },
     {
-      "providerTxnId": "ptx_0172qafxb7",
+      "providerTxnId": "ptx_0208htv58u",
       "accountId": "cedar-sav",
       "postedDate": "2026-09-29",
       "amountCents": 300000,

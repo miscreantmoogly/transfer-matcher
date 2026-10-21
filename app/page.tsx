@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Activity,
   BooksView,
+  DiagnosticsView,
   Drawer,
   HistoryTable,
   PairedView,
@@ -14,6 +15,7 @@ import {
   type View,
 } from "./components";
 import { money, type AppState, type ProposalView } from "./lib";
+import type { Diagnostics } from "@/lib/diagnostics";
 
 type Filter = "all" | "high" | "review";
 type Layout = "paired" | "list";
@@ -35,6 +37,16 @@ export default function Page() {
   const userRef = useRef(userId);
   userRef.current = userId;
   const keyHandler = useRef<(e: KeyboardEvent) => void>(() => {});
+  const [diagnostics, setDiagnostics] = useState<Diagnostics | null>(null);
+
+  // Diagnostics are computed on demand, only when the internal page is open.
+  useEffect(() => {
+    if (view !== "diagnostics") return;
+    fetch("/api/diagnostics", { headers: { "x-user-id": userRef.current } })
+      .then((r) => r.json())
+      .then(setDiagnostics)
+      .catch(() => setDiagnostics(null));
+  }, [view]);
 
   // Remember the list/paired choice for this viewer (a convenience, so storage failures are ignored).
   useEffect(() => {
@@ -141,7 +153,9 @@ export default function Page() {
   const open: ProposalView | undefined =
     openId === null ? undefined : [...state.proposals, ...state.decided].find((p) => p.id === openId);
   // "Could be a transfer" = the import couldn't recognize it as a purchase or sale.
-  const unmatched = likelyOnly ? state.unmatched.filter((t) => t.category.startsWith("Uncategorized")) : state.unmatched;
+  // "Could be a transfer" = on a business's books, and the import couldn't recognize it as a purchase or sale.
+  const likely = state.unmatched.filter((t) => t.entityKind === "business" && t.category.startsWith("Uncategorized"));
+  const unmatched = likelyOnly ? likely : state.unmatched;
   const chosenTxns = state.unmatched.filter((t) => selectedTxns.includes(t.id));
   const txOut = -chosenTxns.filter((t) => t.amountCents < 0).reduce((s, t) => s + t.amountCents, 0);
   const txIn = chosenTxns.filter((t) => t.amountCents > 0).reduce((s, t) => s + t.amountCents, 0);
@@ -199,11 +213,12 @@ export default function Page() {
       r.inserted ? `Pulled in ${r.inserted} new transactions.` : "No new transactions.",
     );
 
-  const titles: Record<View, string> = {
-    review: "Review transfers",
-    unmatched: "Unmatched transactions",
-    books: "Books",
-    history: "History",
+  const titles: Record<View, [string, string]> = {
+    review: ["Transfers", "Review"],
+    unmatched: ["Transfers", "Unmatched transactions"],
+    history: ["Transfers", "History"],
+    books: ["Reports", "Transfer impact"],
+    diagnostics: ["Internal", "Matcher diagnostics"],
   };
 
   return (
@@ -231,7 +246,13 @@ export default function Page() {
 
       <main className={open ? "with-drawer" : ""}>
         <div className="page-head">
-          <h1>{titles[view]}</h1>
+          <div>
+            <div className="crumbs">{titles[view][0]}</div>
+            <h1>
+              {titles[view][1]}
+              {view === "diagnostics" && <span className="tag">Internal</span>}
+            </h1>
+          </div>
           {pendingJob && !workerDown && (
             <span className="status" role="status">
               <span className="dot" aria-hidden="true" />
@@ -247,14 +268,14 @@ export default function Page() {
             </span>
           )}
           <span className="spacer" />
-          {hasData && (
+          {hasData && view !== "diagnostics" && (
             <button className="btn primary" disabled={busy || nextBatch === null} onClick={sync}>
               {nextBatch === null ? "Bank is up to date" : "Sync bank"}
             </button>
           )}
         </div>
 
-        {!hasData ? (
+        {!hasData && view !== "diagnostics" ? (
           <div className="empty">
             <h2>No bank activity yet</h2>
             <p>Sync your banks to bring in recent transactions. Transfers between your own accounts and businesses will show up here for review.</p>
@@ -320,7 +341,7 @@ export default function Page() {
                 <div className="toolbar">
                   <div className="segmented" role="group" aria-label="Filter transactions">
                     <button aria-pressed={likelyOnly} onClick={() => setLikelyOnly(true)}>
-                      Uncategorized {state.unmatched.filter((t) => t.category.startsWith("Uncategorized")).length}
+                      Could be transfers {likely.length}
                     </button>
                     <button aria-pressed={!likelyOnly} onClick={() => setLikelyOnly(false)}>
                       All {state.unmatched.length}
@@ -333,6 +354,7 @@ export default function Page() {
             )}
 
             {view === "books" && <BooksView books={state.books} />}
+            {view === "diagnostics" && <DiagnosticsView data={diagnostics} />}
 
             {view === "history" && (
               <>

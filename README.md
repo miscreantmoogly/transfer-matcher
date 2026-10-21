@@ -23,6 +23,20 @@ profitable than it is, Cedar Creek looks $40,000 less, and neither set of books
 records that one business now owes the other. Those books feed tax returns and
 the reports lenders use to set credit lines.
 
+The demo organization is a fictional family operation with four connected
+"entities": **Cedar Creek Cattle Co.** (Wes), **Hollis Ranch LLC** (his father;
+Wes keeps its books), **Hollis Land Co.** (holds the land and leases pasture to
+both ranches), and **Wes's personal checking**. Money moves between them in
+different ways, and each needs different accounting:
+
+| Movement | Example | Correct treatment |
+|---|---|---|
+| Between one business's own accounts | checking to savings | Neither income nor expense |
+| Between two businesses | Cedar lends Hollis Ranch $40,000 | Due from / due to (intercompany loan) |
+| Business to owner | Wes's monthly $3,500 draw | Owner's draw (equity), not an expense |
+| Owner to business | Wes puts $7,000 into Hollis Ranch | Owner contribution (equity), not income |
+| Real business between the entities | pasture rent to Hollis Land, a hay sale | **Not a transfer**: real income and expense, leave it alone |
+
 Pairing transfers sounds trivial (same amount, opposite sign) but real feeds
 make it hard:
 
@@ -35,6 +49,8 @@ make it hard:
 | One transfer lands in several accounts | $50,000 out arrives as $30,000 + $20,000 |
 | No transfer wording at all | a paper check written from one entity to the other |
 | The other side never arrives (yet) | the deposit shows up in the *next* bank sync |
+| The same money passes through several entities | Cedar to Hollis Ranch to Hollis Land, $20,000 each, same day |
+| Money between related entities that is real income | monthly pasture rent, a hay sale between the ranches |
 
 ## Quick start
 
@@ -53,7 +69,7 @@ isn't running, the app notices and offers to run matching inline.
 Other commands:
 
 ```bash
-npm test           # 37 tests: matcher unit tests + service integration tests on real SQLite
+npm test           # 41 tests: matcher unit tests + service integration tests on real SQLite
 npm run eval       # precision / recall against ground truth -> data/eval_report.md
 npm run generate   # regenerate the synthetic bank feed (deterministic, seeded)
 npm run seed -- --synced   # start with sync 1 already imported and matched
@@ -72,6 +88,10 @@ npm run seed -- --synced   # start with sync 1 already imported and matched
 - **Detail drawer:** both bank lines, every reason behind the score, and what
   accepting does to the books in plain words. It pushes the page over instead
   of covering it, so both sides of the T stay visible.
+- **Part of a larger app:** Transfers sits in a full bookkeeping sidebar (other
+  sections are placeholders) with Review, Unmatched and History, a Transfer
+  impact report, and an internal **Matcher diagnostics** page that grades the
+  matcher case by case against the answer key.
 - **Working through a queue:** accepting moves straight to the next match;
   `J`/`K` move, `A` accepts, `X` selects. Every accept offers **Undo**.
 
@@ -145,6 +165,8 @@ the amount out of whatever income or expense category the import guessed:
 | Same entity | Transfers in Transit (nets to 0) | Transfers in Transit |
 | Between entities | Due from *receiver* (asset) | Due to *sender* (liability) |
 | Fee taken in flight | | shortfall to Bank Fees |
+| Business to owner's personal account | Owner's Draws (equity) | personal side tagged, not on business books |
+| Owner's personal account to business | | Owner Contributions (equity) |
 
 Across entities, every Due-from has an equal Due-to, so they cancel on
 consolidation. The app checks this live, along with "every entry balances".
@@ -176,16 +198,21 @@ transaction, the second write fails instead of double-booking money.
 
 ## Evaluation
 
-On the synthetic feed (181 transactions, 32 real transfers, 6 traps):
+On the synthetic feed (231 transactions: 38 real transfers, 9 look-alikes that
+are not transfers, and 130 ordinary transactions):
 
 | | |
 |---|---|
-| Recall (proposed in any tier) | 97% (31 / 32) |
-| Precision, "Strong" tier (bulk-acceptable) | 100% (22 / 22) |
+| Real transfers found (any tier) | 97% (37 / 38) |
+| Look-alikes correctly ignored | 8 / 9 |
+| Ordinary transactions left alone | 130 / 130 |
+| Precision, "Strong" tier (bulk-acceptable) | 100% (28 / 28) |
 | Precision, "Check" tier | 90% (9 / 10) |
-| Exact vs greedy assignment | 97% vs 91% recall |
+| Exact vs greedy assignment | 97% vs 92% recall |
 
 Full report with window and threshold sweeps: [`data/eval_report.md`](data/eval_report.md).
+The app's internal **Matcher diagnostics** page shows every case, its bank
+lines, and how the matcher did on it.
 
 **Read these numbers with care.** I wrote both the test scenarios and the
 scoring weights, so this measures "does it handle the cases I thought of", not
